@@ -20,7 +20,7 @@ export function getMovementDistanceMap(state: GameState, monsterInstanceId: stri
 
     for (const next of getNeighbors(current)) {
       const cell = getCell(state.board, next);
-      if (!cell || !cell.hasDungeonTile || cell.tileOwner !== monster.owner) continue;
+      if (!cell || !cell.hasDungeonTile || cell.isCore) continue;
       if (cell.monsterId && cell.monsterId !== monster.instanceId) continue;
       const key = positionKey(next);
       if (distances.has(key)) continue;
