@@ -1,0 +1,36 @@
+run_id: RUN-20260512-001-reinstall-harness-engineering
+task_slug: reinstall-harness-engineering
+epic_id: ""
+status: completed
+branch: "main"
+worktree: "/home/locdt/Notes/VSCode/dice-monsters"
+owner: agent
+created_at: 2026-05-12T11:23:26+07:00
+updated_at: 2026-05-12T11:25:42+07:00
+
+scope:
+  expected_files:
+    - AGENTS.md
+    - AGENTS.md.backup-*
+    - .harness/README.md
+    - .harness/INSTALLATION.md
+    - .harness/HARNESS_SKILLS.md
+    - .harness/guides/**
+    - .harness/templates/**
+    - .harness/project-templates/**
+    - .harness/scripts/**
+    - .harness/skills/project-sync.md
+    - .harness/runs/RUN_INDEX.md
+    - .harness/runs/RUN-20260512-001-reinstall-harness-engineering/**
+  protected_files:
+    - src/**
+    - package.json
+    - package-lock.json
+
+conflict_policy:
+  allow_parallel: true
+  require_branch_isolation: false
+  require_worktree_isolation: false
+  conflict_check_required: true
+
+notes: "Reinstall Harness from haketienloc10/harness-engineering via official curl bootstrap; no git clone."
