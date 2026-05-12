@@ -1,4 +1,4 @@
-import { RotateCw, ShieldCheck, Sparkles, StepForward, Sword, TimerReset } from "lucide-react";
+import { Hourglass, RotateCw, ShieldCheck, Snowflake, Sparkles, StepForward, Sword, TimerReset } from "lucide-react";
 import { diceCatalog } from "../game/data/diceCatalog";
 import { monsters } from "../game/data/monsters";
 import type { GameAction, GameState } from "../game/types";
@@ -24,7 +24,10 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
 
   return (
     <section className="panel action-panel" aria-label="Actions">
-      <h2>Actions</h2>
+      <div className="panel-heading">
+        <h2>Actions</h2>
+        {animationLocked && <span>Resolving...</span>}
+      </div>
 
       {state.phase === "summon" && (
         <div className="summon-list">
@@ -53,7 +56,7 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
           <RotateCw size={16} /> Rotate Shape
         </button>
         <button className="action-button action-button--summon" type="button" onClick={() => dispatch({ type: "SKIP_SUMMON" })} disabled={disabled || animationLocked || state.phase !== "summon"}>
-          Skip Summon
+          <Snowflake size={16} /> Skip Summon
         </button>
         <button className="action-button action-button--move" type="button" onClick={() => dispatch({ type: "ENTER_MOVE_MODE" })} disabled={disabled || animationLocked || !canMove}>
           <StepForward size={16} /> Move
@@ -68,7 +71,7 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
           <Sparkles size={16} /> Skill
         </button>
         <button className="action-button action-button--end" type="button" onClick={() => dispatch({ type: "END_TURN" })} disabled={disabled || (state.phase !== "action" && state.phase !== "summon")}>
-          End Turn
+          <Hourglass size={16} /> End Turn
         </button>
         <button type="button" className="action-button danger-button" onClick={() => dispatch({ type: "RESET_GAME" })}>
           <TimerReset size={16} /> Reset

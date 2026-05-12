@@ -9,7 +9,7 @@ type Props = {
   moved?: boolean;
 };
 
-const monsterVisuals: Record<string, { icon: string; label: string; tone: string }> = {
+export const monsterVisuals: Record<string, { icon: string; label: string; tone: string }> = {
   "little-swordsman": { icon: "⚔", label: "Sword", tone: "steel" },
   "stone-guardian": { icon: "◆", label: "Guard", tone: "green" },
   "skyblade-avian": { icon: "✦", label: "Avian", tone: "cyan" },
@@ -39,6 +39,7 @@ export function MonsterToken({ monster, selected = false, damaged = false, attac
   return (
     <span className={className} title={`${definition.name} HP ${monster.hp}/${definition.hp}`}>
       <span className="monster-token__shadow" />
+      <span className="monster-token__aura" aria-hidden="true" />
       <span className="monster-token__icon" aria-hidden="true">{visual.icon}</span>
       <span className="monster-token__label">{visual.label}</span>
       <span className="monster-token__level">L{definition.level}</span>

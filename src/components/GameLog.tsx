@@ -5,14 +5,14 @@ type Props = {
 export function GameLog({ log }: Props) {
   const entries = log.slice(-20).reverse();
 
-  function iconFor(event: string) {
-    if (event.includes("rolled")) return "🎲";
-    if (event.includes("summoned")) return "✦";
-    if (event.includes("moved")) return "👢";
-    if (event.includes("attacked")) return "⚔";
-    if (event.includes("destroyed")) return "◆";
-    if (event.includes("ended turn")) return "⏳";
-    return "•";
+  function metaFor(event: string) {
+    if (event.includes("rolled")) return { icon: "🎲", tone: "roll" };
+    if (event.includes("summoned")) return { icon: "✦", tone: "summon" };
+    if (event.includes("moved")) return { icon: "👢", tone: "move" };
+    if (event.includes("attacked")) return { icon: "⚔", tone: "attack" };
+    if (event.includes("destroyed")) return { icon: "◆", tone: "destroy" };
+    if (event.includes("ended turn")) return { icon: "⏳", tone: "turn" };
+    return { icon: "•", tone: "plain" };
   }
 
   return (
@@ -21,7 +21,7 @@ export function GameLog({ log }: Props) {
       <ol>
         {entries.map((event, index) => (
           <li className={index === 0 ? "log-entry log-entry--new" : "log-entry"} key={`${event}-${index}`}>
-            <span>{iconFor(event)}</span>
+            <span className={`log-entry__icon log-entry__icon--${metaFor(event).tone}`}>{metaFor(event).icon}</span>
             <p>{event}</p>
           </li>
         ))}

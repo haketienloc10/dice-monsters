@@ -1,0 +1,28 @@
+run_id: RUN-20260512-003-upgrade-polished-fantasy-strategy-ui
+task_slug: upgrade-polished-fantasy-strategy-ui
+epic_id: ""
+status: completed
+branch: ""
+worktree: "/home/locdt/Notes/VSCode/dice-monsters"
+owner: agent
+created_at: 2026-05-12T11:34:07+07:00
+updated_at: 2026-05-12T11:41:30+07:00
+
+scope:
+  expected_files:
+    - src/components/**
+    - src/styles/**
+    - src/game/types.ts
+    - src/game/reducer.ts
+  protected_files:
+    - .harness/guides/**
+    - .harness/templates/**
+    - .harness/scripts/**
+
+conflict_policy:
+  allow_parallel: true
+  require_branch_isolation: false
+  require_worktree_isolation: false
+  conflict_check_required: true
+
+notes: "Continue the completed polished UI foundation. Focus on visual polish, layout, component richness, and UI-only animation feedback while preserving reducer/rule gameplay."

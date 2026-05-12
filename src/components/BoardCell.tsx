@@ -24,6 +24,7 @@ export function BoardCell({ cell, state, placementPreview, onClick, onHover }: P
   const isValidPlacementAnchor =
     state.interactionMode === "placing" && cellHasHighlight(state.highlightedCells, cell.x, cell.y);
   const lastEvent = state.lastEvent;
+  const isSelectedMonsterCell = Boolean(state.selectedMonsterId && state.selectedMonsterId === cell.monsterId);
   const isNewTile = lastEvent?.type === "summoned" && lastEvent.placedCells.some((position) => position.x === cell.x && position.y === cell.y);
   const isMovedMonster = lastEvent?.type === "moved" && lastEvent.monsterId === cell.monsterId;
   const isAttackingMonster = lastEvent?.type === "attacked" && lastEvent.attackerId === cell.monsterId;
@@ -39,7 +40,7 @@ export function BoardCell({ cell, state, placementPreview, onClick, onHover }: P
     cell.tileOwner === "P2" ? "cell--p2-tile" : "",
     cell.coreOwner === "P1" ? "cell--core-p1" : "",
     cell.coreOwner === "P2" ? "cell--core-p2" : "",
-    state.selectedMonsterId === cell.monsterId ? "cell--selected" : "",
+    isSelectedMonsterCell ? "cell--selected" : "",
     isReachable ? "cell--reachable" : "",
     attackTarget ? "cell--attackable" : "",
     isValidPlacementAnchor ? "cell--placement-anchor" : "",
@@ -64,7 +65,7 @@ export function BoardCell({ cell, state, placementPreview, onClick, onHover }: P
       {monster && (
         <MonsterToken
           monster={monster}
-          selected={state.selectedMonsterId === cell.monsterId}
+          selected={isSelectedMonsterCell}
           damaged={isDamagedMonster}
           attacking={isAttackingMonster}
           moved={isMovedMonster}

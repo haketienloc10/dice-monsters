@@ -12,6 +12,7 @@ export function CoreBase({ owner, hp, hit = false }: Props) {
 
   return (
     <span className={className} title={`${owner} Heart Core HP ${hp}`}>
+      <span className="core-base__runes" aria-hidden="true" />
       <span className="core-base__platform" />
       <span className="core-base__crystal" aria-hidden="true">{isP1 ? "◆" : "▲"}</span>
       <span className="core-base__heart" aria-hidden="true">♥</span>

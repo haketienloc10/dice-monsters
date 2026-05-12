@@ -1,11 +1,14 @@
 .board-frame {
   position: relative;
   display: grid;
+  place-items: center;
   min-height: 0;
   padding: 14px;
+  overflow: hidden;
   border: 2px solid rgba(247, 215, 122, 0.45);
   border-radius: 18px;
   background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 18px),
     linear-gradient(135deg, rgba(247, 215, 122, 0.16), transparent 20%, transparent 80%, rgba(247, 215, 122, 0.12)),
     #0b111c;
   box-shadow:
@@ -20,8 +23,10 @@
   display: grid;
   grid-template-columns: repeat(13, minmax(38px, 1fr));
   grid-template-rows: repeat(9, minmax(38px, 1fr));
-  width: 100%;
+  width: auto;
+  height: 100%;
   max-width: min(100%, 980px);
+  max-height: 100%;
   aspect-ratio: 13 / 9;
   place-self: center;
   overflow: hidden;
@@ -30,6 +35,7 @@
   background:
     radial-gradient(circle at 12% 50%, rgba(56, 189, 248, 0.16), transparent 24%),
     radial-gradient(circle at 88% 50%, rgba(251, 113, 133, 0.16), transparent 24%),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.08), transparent 18%, transparent 82%, rgba(185, 28, 28, 0.08)),
     #05070b;
   box-shadow: inset 0 0 44px rgba(0, 0, 0, 0.72);
 }
@@ -43,7 +49,9 @@
   overflow: hidden;
   border: 1px solid rgba(255, 238, 198, 0.08);
   color: var(--text-main);
-  background: #0d1118;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.035), transparent 40%),
+    #0d1118;
   cursor: pointer;
   isolation: isolate;
 }
@@ -87,7 +95,8 @@
 .cell--p2-tile {
   background:
     linear-gradient(145deg, var(--stone-1), var(--stone-2) 48%, #141b25),
-    repeating-linear-gradient(45deg, transparent 0 12px, rgba(255, 255, 255, 0.03) 12px 14px);
+    repeating-linear-gradient(45deg, transparent 0 12px, rgba(255, 255, 255, 0.05) 12px 14px),
+    repeating-linear-gradient(135deg, transparent 0 17px, rgba(0, 0, 0, 0.12) 17px 19px);
 }
 
 .cell--p1-tile {
@@ -157,9 +166,17 @@
   color: var(--text-main);
 }
 
+.core-base__runes {
+  position: absolute;
+  inset: 2%;
+  border: 1px dashed rgba(247, 215, 122, 0.32);
+  border-radius: 999px;
+  animation: rune-spin 9000ms linear infinite;
+}
+
 .core-base__platform {
   position: absolute;
-  inset: 18%;
+  inset: 16%;
   border: 2px solid rgba(247, 215, 122, 0.36);
   border-radius: 999px;
   background:
@@ -170,7 +187,7 @@
 
 .core-base__crystal {
   z-index: 1;
-  font-size: clamp(1.15rem, 2.7vw, 2.2rem);
+  font-size: clamp(1.2rem, 3.1vw, 2.45rem);
   line-height: 1;
   animation: core-pulse 1500ms ease-in-out infinite;
 }
@@ -222,6 +239,7 @@
   background:
     radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.34), transparent 24%),
     linear-gradient(145deg, #334155, #0f172a);
+  box-shadow: 0 12px 16px rgba(0, 0, 0, 0.34);
   transform: translateZ(0);
   transition: transform 260ms ease, filter 260ms ease, box-shadow 260ms ease;
 }
@@ -272,9 +290,17 @@
   filter: blur(3px);
 }
 
+.monster-token__aura {
+  position: absolute;
+  inset: 8%;
+  border-radius: 999px;
+  background: conic-gradient(from 120deg, transparent, rgba(247, 215, 122, 0.22), transparent 34%);
+  opacity: 0.72;
+}
+
 .monster-token__icon {
   z-index: 1;
-  font-size: clamp(1rem, 2.1vw, 1.85rem);
+  font-size: clamp(1.1rem, 2.25vw, 2rem);
   font-weight: 900;
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.46);
 }
@@ -299,8 +325,8 @@
   z-index: 3;
   display: grid;
   place-items: center;
-  min-width: 20px;
-  height: 20px;
+  min-width: 22px;
+  height: 22px;
   padding: 0 4px;
   border-radius: 999px;
   background: rgba(7, 10, 15, 0.88);

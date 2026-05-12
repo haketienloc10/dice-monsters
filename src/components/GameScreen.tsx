@@ -151,7 +151,6 @@ export function GameScreen() {
         <aside className="hud-column hud-column--left">
           <PlayerCorePanel player={state.players.P1} active={state.currentPlayer === "P1"} />
           <PlayerCorePanel player={state.players.P2} active={state.currentPlayer === "P2"} />
-          <CrestBar player={state.players[state.currentPlayer]} lastEvent={state.lastEvent} />
         </aside>
 
         <section className="board-stage" aria-label="Dungeon board area">
@@ -169,6 +168,7 @@ export function GameScreen() {
               disabled={isAITurn || isDiceRolling}
               rolling={isDiceRolling}
             />
+            <CrestBar player={state.players[state.currentPlayer]} lastEvent={state.lastEvent} />
             <GameLog log={state.log} />
           </section>
           {isAITurn && <div className="ai-status" role="status">AI is thinking...</div>}

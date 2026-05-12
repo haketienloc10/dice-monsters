@@ -1,0 +1,30 @@
+run_id: RUN-20260512-004-add-real-e2e-tests
+task_slug: add-real-e2e-tests
+epic_id: ""
+status: completed
+branch: ""
+worktree: "/home/locdt/Notes/VSCode/dice-monsters"
+owner: agent
+created_at: 2026-05-12T11:45:21+07:00
+updated_at: 2026-05-12T11:55:20+07:00
+
+scope:
+  expected_files:
+    - package.json
+    - package-lock.json
+    - playwright.config.ts
+    - vitest.config.ts
+    - e2e/**
+    - .gitignore
+  protected_files:
+    - .harness/guides/**
+    - .harness/templates/**
+    - .harness/scripts/**
+
+conflict_policy:
+  allow_parallel: true
+  require_branch_isolation: false
+  require_worktree_isolation: false
+  conflict_check_required: true
+
+notes: "Add real browser E2E coverage with Playwright using system Chrome where possible. Preserve existing UI/game code."

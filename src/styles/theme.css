@@ -18,6 +18,9 @@
   --stone-3: #111827;
   --text-main: #f8fafc;
   --text-muted: #cbd5e1;
+  --text-faint: #94a3b8;
+  --panel-glass: rgba(9, 13, 20, 0.86);
+  --border-bright: rgba(247, 215, 122, 0.68);
   --cell-w: calc(100% / 13);
   --cell-h: calc(100% / 9);
 }
