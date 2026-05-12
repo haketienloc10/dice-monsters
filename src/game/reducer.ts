@@ -28,6 +28,10 @@ function sameTarget(a: AttackTarget, b: AttackTarget): boolean {
   return targetKey(a) === targetKey(b);
 }
 
+function playerLogLabel(state: GameState, playerId = state.currentPlayer): string {
+  return state.settings.controls[playerId] === "ai" ? `${playerId} AI` : playerId;
+}
+
 export function gameReducer(state: GameState, action: GameAction): GameState {
   if (state.phase === "gameOver" && action.type !== "RESET_GAME") return state;
 
@@ -47,7 +51,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       clearInteraction(next);
       addLog(
         next,
-        `${next.currentPlayer} rolled: ${roll.map((result) => `${CREST_ICONS[result.face.crest]} ${result.face.crest}`).join(", ")}.`
+        `${playerLogLabel(next)} rolled: ${roll.map((result) => `${CREST_ICONS[result.face.crest]} ${result.face.crest}`).join(", ")}.`
       );
       return next;
     }
@@ -115,7 +119,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       next.summonCandidates = [];
       next.phase = "action";
       clearInteraction(next);
-      addLog(next, `${next.currentPlayer} summoned ${monsterDefinition.name} at (${summonCell.x},${summonCell.y}).`);
+      addLog(next, `${playerLogLabel(next)} summoned ${monsterDefinition.name} at (${summonCell.x},${summonCell.y}).`);
       return next;
     }
 
@@ -126,7 +130,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       next.selectedSummonDiceId = undefined;
       next.summonCandidates = [];
       clearInteraction(next);
-      addLog(next, `${next.currentPlayer} skipped summon.`);
+      addLog(next, `${playerLogLabel(next)} skipped summon.`);
       return next;
     }
 
@@ -168,7 +172,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       monster.y = action.y;
       next.players[next.currentPlayer].crestPool.move -= distance;
       clearInteraction(next);
-      addLog(next, `${next.currentPlayer} moved ${monsterDefinitions[monster.definitionId].name} to (${action.x},${action.y}) for ${distance} move.`);
+      addLog(next, `${playerLogLabel(next)} moved ${monsterDefinitions[monster.definitionId].name} to (${action.x},${action.y}) for ${distance} move.`);
       return next;
     }
 
@@ -208,7 +212,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         const defenderDefinition = monsterDefinitions[defender.definitionId];
         const damage = calculateMonsterDamage(attackerDefinition.atk, defenderDefinition.def);
         defender.hp -= damage;
-        addLog(next, `${next.currentPlayer} attacked ${defenderDefinition.name} for ${damage} damage.`);
+        addLog(next, `${playerLogLabel(next)} attacked ${defenderDefinition.name} for ${damage} damage.`);
         if (defender.hp <= 0) {
           const cell = getCell(next.board, defender);
           if (cell) cell.monsterId = undefined;
@@ -221,11 +225,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       } else {
         const damage = attackerDefinition.atk;
         next.players[action.target.playerId].coreHp = Math.max(0, next.players[action.target.playerId].coreHp - damage);
-        addLog(next, `${action.target.playerId} core took ${damage} damage.`);
+        addLog(next, `${playerLogLabel(next)} attacked ${action.target.playerId} core for ${damage} damage.`);
         if (next.players[action.target.playerId].coreHp <= 0) {
           next.winner = next.currentPlayer;
           next.phase = "gameOver";
-          addLog(next, `${next.currentPlayer} destroyed the enemy Heart Core and wins.`);
+          addLog(next, `${playerLogLabel(next)} destroyed the enemy Heart Core and wins.`);
         }
       }
 
@@ -236,7 +240,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "END_TURN": {
       if (state.phase !== "action" && state.phase !== "summon") return state;
       const next = endTurn(cloneGameState(state));
-      addLog(next, `${state.currentPlayer} ended turn. ${next.currentPlayer} begins.`);
+      addLog(next, `${playerLogLabel(state)} ended turn. ${next.currentPlayer} begins.`);
       return next;
     }
 

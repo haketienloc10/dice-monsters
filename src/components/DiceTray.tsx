@@ -4,9 +4,10 @@ import type { GameState } from "../game/types";
 type Props = {
   state: GameState;
   onRoll: () => void;
+  disabled?: boolean;
 };
 
-export function DiceTray({ state, onRoll }: Props) {
+export function DiceTray({ state, onRoll, disabled = false }: Props) {
   return (
     <section className="dice-tray" aria-label="Dice tray">
       <div className="dice-results">
@@ -22,7 +23,7 @@ export function DiceTray({ state, onRoll }: Props) {
           ))
         )}
       </div>
-      <button className="primary-button" type="button" onClick={onRoll} disabled={state.phase !== "roll"}>
+      <button className="primary-button" type="button" onClick={onRoll} disabled={disabled || state.phase !== "roll"}>
         Roll Dice
       </button>
     </section>

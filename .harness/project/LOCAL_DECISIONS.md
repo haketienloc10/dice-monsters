@@ -22,3 +22,12 @@ Ghi lại quyết định local của target repository mà agent phải tôn tr
 - Decision: Avoid adding heavier E2E/browser tooling unless a UI task explicitly needs it and the contract approves it.
   - Reason: Current coverage uses Vitest and Testing Library; Harness smoke is curl-level.
   - Date: 2026-05-12
+- Decision: Movement uses continuous dungeon paths regardless of dungeon tile owner.
+  - Reason: Monsters may enter opponent dungeon tiles only when connected by orthogonally adjacent dungeon tiles.
+  - Date: 2026-05-12
+- Decision: Movement cannot path through occupied monster cells and cannot enter Core cells.
+  - Reason: Monsters block traversal; Core interaction is combat-only.
+  - Date: 2026-05-12
+- Decision: Core damage is performed by Attack action when the Core is inside the attacker's range.
+  - Reason: Core should not be entered or damaged by movement.
+  - Date: 2026-05-12

@@ -22,6 +22,13 @@ Ghi lại module ownership, boundaries, integration points, và khu vực thư�
   - Files: `src/game/rules/board.ts`, `combat.ts`, `dice.ts`, `movement.ts`, `summon.ts`, `turn.ts`.
   - Boundaries: pure or mostly pure helpers for mechanics. Keep UI concerns out of this layer.
   - Common tests: `src/game/rules/gameRules.test.ts`.
+  - Movement notes:
+    - `movement.ts` owns continuous dungeon path reachability and movement cost.
+    - Movement can cross into opponent-owned dungeon tiles when connected by orthogonally adjacent dungeon tiles.
+    - Movement must not path through another monster and must not enter Core cells.
+  - Combat notes:
+    - `combat.ts` owns attack target discovery by monster range.
+    - Core damage should happen through Attack action/range handling, not movement.
 - Module: React UI
   - Files: `src/components/*.tsx`.
   - Boundaries: render state, dispatch game actions, and compose controls. Keep core mechanics in `src/game/**`.

@@ -6,9 +6,10 @@ import type { GameAction, GameState } from "../game/types";
 type Props = {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
+  disabled?: boolean;
 };
 
-export function ActionPanel({ state, dispatch }: Props) {
+export function ActionPanel({ state, dispatch, disabled = false }: Props) {
   const selectedMonster = state.selectedMonsterId ? state.monsters[state.selectedMonsterId] : undefined;
   const canMove =
     state.phase === "action" &&
@@ -36,6 +37,7 @@ export function ActionPanel({ state, dispatch }: Props) {
                 className={state.selectedSummonDiceId === diceId ? "choice-button choice-button--active" : "choice-button"}
                 key={diceId}
                 onClick={() => dispatch({ type: "SELECT_SUMMON_CANDIDATE", diceId })}
+                disabled={disabled}
               >
                 <strong>{monster.name}</strong>
                 <span>Level {monster.level} · {die.tileShapeId}</span>
@@ -46,16 +48,16 @@ export function ActionPanel({ state, dispatch }: Props) {
       )}
 
       <div className="button-stack">
-        <button type="button" onClick={() => dispatch({ type: "ROTATE_PLACEMENT" })} disabled={state.interactionMode !== "placing"}>
+        <button type="button" onClick={() => dispatch({ type: "ROTATE_PLACEMENT" })} disabled={disabled || state.interactionMode !== "placing"}>
           <RotateCw size={16} /> Rotate Shape
         </button>
-        <button type="button" onClick={() => dispatch({ type: "SKIP_SUMMON" })} disabled={state.phase !== "summon"}>
+        <button type="button" onClick={() => dispatch({ type: "SKIP_SUMMON" })} disabled={disabled || state.phase !== "summon"}>
           Skip Summon
         </button>
-        <button type="button" onClick={() => dispatch({ type: "ENTER_MOVE_MODE" })} disabled={!canMove}>
+        <button type="button" onClick={() => dispatch({ type: "ENTER_MOVE_MODE" })} disabled={disabled || !canMove}>
           <StepForward size={16} /> Move
         </button>
-        <button type="button" onClick={() => dispatch({ type: "ENTER_ATTACK_MODE" })} disabled={!canAttack}>
+        <button type="button" onClick={() => dispatch({ type: "ENTER_ATTACK_MODE" })} disabled={disabled || !canAttack}>
           <Sword size={16} /> Attack
         </button>
         <button type="button" disabled>
@@ -64,7 +66,7 @@ export function ActionPanel({ state, dispatch }: Props) {
         <button type="button" disabled>
           <Sparkles size={16} /> Skill
         </button>
-        <button type="button" onClick={() => dispatch({ type: "END_TURN" })} disabled={state.phase !== "action" && state.phase !== "summon"}>
+        <button type="button" onClick={() => dispatch({ type: "END_TURN" })} disabled={disabled || (state.phase !== "action" && state.phase !== "summon")}>
           End Turn
         </button>
         <button type="button" className="danger-button" onClick={() => dispatch({ type: "RESET_GAME" })}>

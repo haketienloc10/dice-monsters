@@ -1,0 +1,29 @@
+run_id: RUN-20260512-001-update-project-context-movement-rules
+task_slug: update-project-context-movement-rules
+status: completed
+branch: ""
+worktree: ""
+owner: agent
+created_at: 2026-05-12T00:52:18+07:00
+updated_at: 2026-05-12T00:53:50+07:00
+
+scope:
+  expected_files:
+    - .harness/project/SOURCE_OF_TRUTH.md
+    - .harness/project/MODULE_MAP.md
+    - .harness/project/LOCAL_DECISIONS.md
+    - .harness/project/VALIDATION_PROFILE.md
+    - .harness/runs/RUN-20260512-001-update-project-context-movement-rules/**
+    - .harness/runs/RUN_INDEX.md
+  protected_files:
+    - .harness/guides/**
+    - .harness/templates/**
+    - .harness/scripts/**
+
+conflict_policy:
+  allow_parallel: true
+  require_branch_isolation: false
+  require_worktree_isolation: false
+  conflict_check_required: true
+
+notes: ""

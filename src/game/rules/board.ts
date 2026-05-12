@@ -67,6 +67,9 @@ export function cloneGameState(state: GameState): GameState {
         summonedMonsterIds: [...state.players.P2.summonedMonsterIds]
       }
     },
+    settings: {
+      controls: { ...state.settings.controls }
+    },
     monsters: Object.fromEntries(Object.entries(state.monsters).map(([id, monster]) => [id, { ...monster }])),
     latestRoll: state.latestRoll.map((roll) => ({ ...roll, face: { ...roll.face } })),
     summonCandidates: [...state.summonCandidates],

@@ -50,6 +50,19 @@
   letter-spacing: 0;
 }
 
+.ai-thinking,
+.ai-status {
+  color: #f8d98a;
+}
+
+.ai-status {
+  align-self: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(242, 193, 104, 0.6);
+  border-radius: 6px;
+  background: rgba(24, 22, 26, 0.94);
+}
+
 .game-layout {
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(620px, 1fr) minmax(240px, 310px);

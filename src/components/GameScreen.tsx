@@ -8,6 +8,7 @@ import { MonsterInfoPanel } from "./MonsterInfoPanel";
 import { PlayerCorePanel } from "./PlayerCorePanel";
 import { TileShapePreview } from "./TileShapePreview";
 import { TopBar } from "./TopBar";
+import { useAIController } from "../game/ai/aiController";
 import { diceCatalog } from "../game/data/diceCatalog";
 import { createInitialState } from "../game/initialState";
 import { cellHasHighlight, cellTargetAt, gameReducer } from "../game/reducer";
@@ -17,6 +18,7 @@ import type { BoardPosition } from "../game/types";
 export function GameScreen() {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const [hoveredCell, setHoveredCell] = useState<BoardPosition | undefined>();
+  const isAITurn = useAIController(state, dispatch);
 
   const selectedDie = useMemo(
     () => diceCatalog.find((die) => die.id === state.selectedSummonDiceId),
@@ -32,6 +34,8 @@ export function GameScreen() {
   }, [hoveredCell, selectedDie, state]);
 
   function handleCellClick(x: number, y: number) {
+    if (isAITurn) return;
+
     if (state.interactionMode === "placing") {
       dispatch({ type: "PLACE_DUNGEON_SHAPE", x, y });
       return;
@@ -73,11 +77,12 @@ export function GameScreen() {
             onCellClick={handleCellClick}
             onCellHover={(position) => setHoveredCell(position)}
           />
-          <DiceTray state={state} onRoll={() => dispatch({ type: "ROLL_DICE" })} />
+          <DiceTray state={state} onRoll={() => dispatch({ type: "ROLL_DICE" })} disabled={isAITurn} />
+          {isAITurn && <div className="ai-status" role="status">AI is thinking...</div>}
         </section>
 
         <aside className="side-panel side-panel--right">
-          <ActionPanel state={state} dispatch={dispatch} />
+          <ActionPanel state={state} dispatch={dispatch} disabled={isAITurn} />
           <TileShapePreview state={state} />
           <GameLog log={state.log} />
         </aside>

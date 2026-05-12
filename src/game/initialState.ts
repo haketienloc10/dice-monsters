@@ -52,6 +52,12 @@ export function createInitialState(): GameState {
         summonedMonsterIds: []
       }
     },
+    settings: {
+      controls: {
+        P1: "human",
+        P2: "ai"
+      }
+    },
     currentPlayer: "P1",
     turnNumber: 1,
     phase: "roll",

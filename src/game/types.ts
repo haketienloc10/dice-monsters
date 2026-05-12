@@ -1,5 +1,11 @@
 export type PlayerId = "P1" | "P2";
 
+export type PlayerControl = "human" | "ai";
+
+export type GameSettings = {
+  controls: Record<PlayerId, PlayerControl>;
+};
+
 export type CrestType = "summon" | "move" | "attack" | "defense" | "magic" | "trap";
 
 export type CrestPool = Record<CrestType, number>;
@@ -97,6 +103,7 @@ export type InteractionMode = "none" | "placing" | "moving" | "attacking";
 export type GameState = {
   board: BoardCell[][];
   players: Record<PlayerId, PlayerState>;
+  settings: GameSettings;
   currentPlayer: PlayerId;
   turnNumber: number;
   phase: GamePhase;

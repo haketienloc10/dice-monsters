@@ -40,6 +40,8 @@ Discovery output records candidate validation commands from observed files only.
   - Current smoke script is curl-level only; for UI behaviour changes, also add behaviour-level evidence with Testing Library, browser/manual checks, or an E2E tool if introduced by an approved task.
 - Test strategy:
   - Prefer rule/unit tests in `src/game/rules/*.test.ts` for game mechanics.
+  - For movement changes, cover reachable cells and exact distance, including owner boundary crossing, monster blockers, Core blockers, and move crest/range limits.
+  - For combat target changes, cover valid attack targets directly, especially Core range behaviour.
   - Prefer component tests near `src/components/*.test.tsx` for UI flows.
   - For reducer or interaction changes, test the state transition directly when feasible and add a UI smoke only for user-facing wiring.
 - Known flaky checks:
