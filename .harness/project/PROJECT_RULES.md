@@ -7,6 +7,8 @@ Last reviewed: 2026-05-12
 - Follow root `AGENTS.md` for Harness workflow rules.
 - Communicate with the user in Vietnamese unless repo-specific documentation requires another language.
 - Keep code identifiers, paths, commands, logs, package names, and API names in their original language.
+- For Harness lifecycle execution, root `AGENTS.md` now requires reading `.harness/guides/LIFECYCLE_ORCHESTRATION.md`; `run.yaml` is the authoritative workflow state.
+- If Codex subagents are available for lifecycle execution, root `AGENTS.md` requires reading `.harness/guides/SUBAGENT_EXECUTION.md` and using role-specific executors.
 
 ## Source Rules
 
@@ -26,3 +28,4 @@ Last reviewed: 2026-05-12
 - Preserve manual notes in `.harness/project/*`.
 - Old adapter files such as `PROJECT_MAP.md`, `STACK_PROFILE.md`, and `VALIDATION_PROFILE.md` are local context and should not be deleted without an explicit user request.
 - If source evidence contradicts Harness docs, update the relevant Harness context file or mark the uncertainty.
+- `.harness/INSTALLATION.md` records the current installed Harness kernel and ownership rules; the latest install timestamp is `2026-05-12T19:50:01+07:00`.

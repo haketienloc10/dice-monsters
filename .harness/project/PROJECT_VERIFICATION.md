@@ -37,6 +37,19 @@ For browser flow changes, also run:
 npm run test:e2e
 ```
 
+## Harness Verification Wrapper
+
+```bash
+bash .harness/scripts/verify.sh
+```
+
+Current Harness wrapper behavior:
+
+- Validates any run directories passed as arguments via `.harness/scripts/validate-run.sh`.
+- Detects `package.json`.
+- Runs `npm run lint` and `npm run typecheck` only if those scripts exist.
+- Runs `npm test` and `npm run build` when available.
+
 ## Evidence
 
 - `package.json` scripts define `dev`, `build`, `test`, and `test:e2e`.
