@@ -20,3 +20,4 @@
 | RUN-20260512-001-allow-opponent-dungeon-movement | allow-opponent-dungeon-movement | completed |  |  | agent | 2026-05-12T00:37:12+07:00 | 2026-05-12T00:39:26+07:00 |
 | RUN-20260512-001-update-project-context-movement-rules | update-project-context-movement-rules | completed |  |  | agent | 2026-05-12T00:52:18+07:00 | 2026-05-12T00:53:50+07:00 |
 | RUN-20260512-001-add-ai-controlled-player-2 | add-ai-controlled-player-2 | completed | main | /home/locdt/dice-monsters | agent | 2026-05-12T00:53:50+07:00 | 2026-05-12T01:04:30+07:00 |
+| RUN-20260512-002-polished-fantasy-ui-foundation | polished-fantasy-ui-foundation | completed |  | /home/locdt/Notes/VSCode/dice-monsters | agent | 2026-05-12T00:00:00+07:00 | 2026-05-12T10:36:00+07:00 |

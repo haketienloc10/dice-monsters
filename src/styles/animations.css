@@ -1,0 +1,113 @@
+@keyframes dice-roll {
+  0% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(90deg) translateY(-10px); }
+  40% { transform: rotate(180deg) translateY(6px); }
+  60% { transform: rotate(270deg) translateY(-8px); }
+  80% { transform: rotate(360deg) translateY(4px); }
+  100% { transform: rotate(720deg) translateY(0); }
+}
+
+@keyframes summon-burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); filter: blur(8px); }
+  40% { opacity: 1; transform: translate(-50%, -50%) scale(1.25); filter: blur(0); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+
+@keyframes tile-materialize {
+  0% { filter: brightness(2); transform: scale(0.86); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
+
+@keyframes token-arrive {
+  0% { opacity: 0.5; transform: scale(0.85) translateY(-8px); filter: blur(2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+@keyframes trail-fade {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--effect-angle)) scaleX(1.08); }
+}
+
+@keyframes attack-lunge {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18) translateY(-4px); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slash {
+  0% { opacity: 0; transform: rotate(var(--effect-angle)) scaleX(0.2); }
+  40% { opacity: 1; transform: rotate(var(--effect-angle)) scaleX(1); }
+  100% { opacity: 0; transform: rotate(var(--effect-angle)) scaleX(1.25); }
+}
+
+@keyframes projectile {
+  0% { opacity: 0; transform: rotate(var(--effect-angle)) scaleX(0.1); }
+  45% { opacity: 1; transform: rotate(var(--effect-angle)) scaleX(1); }
+  100% { opacity: 0; transform: rotate(var(--effect-angle)) scaleX(1.05); }
+}
+
+@keyframes damage-float {
+  0% { opacity: 0; transform: translate(-50%, calc(-50% + 8px)) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 36px)) scale(1); }
+}
+
+@keyframes damage-flash {
+  0% { filter: brightness(1); }
+  25% { filter: brightness(2.3); }
+  65% { filter: brightness(0.8); }
+  100% { filter: brightness(1); }
+}
+
+@keyframes death-burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  35% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+}
+
+@keyframes core-hit {
+  0% { filter: brightness(1); transform: scale(1); }
+  25% { filter: brightness(2); transform: scale(1.08); }
+  60% { filter: brightness(0.8); transform: scale(0.96); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
+
+@keyframes core-hit-wave {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.65); }
+}
+
+@keyframes phase-banner {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(0.95); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.98); }
+}
+
+@keyframes crest-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08); filter: brightness(1.25); }
+  100% { transform: scale(1); }
+}
+
+@keyframes core-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.86; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes reachable-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.48; }
+  50% { transform: scale(1.05); opacity: 0.95; }
+}
+
+@keyframes attackable-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.28); }
+}
+
+@keyframes log-highlight {
+  0% { background: rgba(247, 215, 122, 0.22); }
+  100% { background: rgba(7, 10, 15, 0.36); }
+}

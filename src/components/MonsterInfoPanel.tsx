@@ -16,7 +16,15 @@ export function MonsterInfoPanel({ state }: Props) {
         <p className="muted">Select a monster on the board.</p>
       ) : (
         <>
+          <div className={`monster-card-portrait monster-card-portrait--${monster.owner.toLowerCase()}`}>
+            <span>{definition.name.slice(0, 1)}</span>
+            <em>{monster.owner}</em>
+          </div>
           <h3>{definition.name}</h3>
+          <p className="monster-subtitle">{definition.type}</p>
+          <div className="hp-bar" aria-label={`HP ${monster.hp} of ${definition.hp}`}>
+            <span style={{ width: `${Math.max(0, (monster.hp / definition.hp) * 100)}%` }} />
+          </div>
           <div className="stat-grid">
             <span>Owner</span>
             <strong>{monster.owner}</strong>

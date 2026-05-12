@@ -1,0 +1,44 @@
+epic_id: EPIC-20260512-001-polished-fantasy-ui
+task_slug: polished-fantasy-ui
+status: completed
+owner: agent
+created_at: 2026-05-12T00:00:00+07:00
+updated_at: 2026-05-12T10:36:00+07:00
+
+goal: "Upgrade the playable Dice Monsters UI into a polished 2D fantasy tactical board-game screen while preserving reducer-driven gameplay rules."
+non_goals:
+  - "Rewrite game rules or AI strategy."
+  - "Use official Yu-Gi-Oh! assets, logos, copied artwork, or names."
+  - "Introduce heavy animation or e2e dependencies."
+
+scope:
+  summary: "Fantasy HUD/layout, dungeon board polish, monster/core tokens, dice/crest visuals, lightweight UI effects, and verification."
+  expected_modules:
+    - "src/components"
+    - "src/styles"
+    - "src/game/types.ts"
+    - "src/game/reducer.ts"
+  expected_user_flows:
+    - "P1 roll, summon, move, attack, end turn"
+    - "P2 AI roll/summon/move/attack/end turn feedback"
+    - "Core damage and game over feedback"
+  expected_runtime_surfaces:
+    - "Vite React game screen"
+
+decomposition:
+  strategy: milestone
+  run_count_estimate: 1-3
+  active_run_id: ""
+
+acceptance:
+  source_file: 02-acceptance-matrix.md
+  completion_policy: all_required_acceptance_passed
+
+risk:
+  known_unknowns:
+    - "No browser automation dependency is present, so runtime verification may use local dev server and Harness smoke script."
+  high_risk_areas:
+    - "Keeping animation state observational so it cannot mutate game rules."
+    - "AI timer/action sequencing and duplicate input prevention during animations."
+
+notes: "Initial run aims to deliver a complete visual/effects pass within existing React/CSS structure, then follow-up runs only if evaluation finds gaps."

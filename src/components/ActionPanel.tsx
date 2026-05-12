@@ -5,11 +5,12 @@ import type { GameAction, GameState } from "../game/types";
 
 type Props = {
   state: GameState;
-  dispatch: React.Dispatch<GameAction>;
+  dispatch: (action: GameAction, lock?: { reason: "dice" | "summon" | "move" | "attack"; duration: number }) => void;
   disabled?: boolean;
+  animationLocked?: boolean;
 };
 
-export function ActionPanel({ state, dispatch, disabled = false }: Props) {
+export function ActionPanel({ state, dispatch, disabled = false, animationLocked = false }: Props) {
   const selectedMonster = state.selectedMonsterId ? state.monsters[state.selectedMonsterId] : undefined;
   const canMove =
     state.phase === "action" &&
@@ -37,7 +38,7 @@ export function ActionPanel({ state, dispatch, disabled = false }: Props) {
                 className={state.selectedSummonDiceId === diceId ? "choice-button choice-button--active" : "choice-button"}
                 key={diceId}
                 onClick={() => dispatch({ type: "SELECT_SUMMON_CANDIDATE", diceId })}
-                disabled={disabled}
+                disabled={disabled || animationLocked}
               >
                 <strong>{monster.name}</strong>
                 <span>Level {monster.level} · {die.tileShapeId}</span>
@@ -48,28 +49,28 @@ export function ActionPanel({ state, dispatch, disabled = false }: Props) {
       )}
 
       <div className="button-stack">
-        <button type="button" onClick={() => dispatch({ type: "ROTATE_PLACEMENT" })} disabled={disabled || state.interactionMode !== "placing"}>
+        <button className="action-button action-button--summon" type="button" onClick={() => dispatch({ type: "ROTATE_PLACEMENT" })} disabled={disabled || animationLocked || state.interactionMode !== "placing"}>
           <RotateCw size={16} /> Rotate Shape
         </button>
-        <button type="button" onClick={() => dispatch({ type: "SKIP_SUMMON" })} disabled={disabled || state.phase !== "summon"}>
+        <button className="action-button action-button--summon" type="button" onClick={() => dispatch({ type: "SKIP_SUMMON" })} disabled={disabled || animationLocked || state.phase !== "summon"}>
           Skip Summon
         </button>
-        <button type="button" onClick={() => dispatch({ type: "ENTER_MOVE_MODE" })} disabled={disabled || !canMove}>
+        <button className="action-button action-button--move" type="button" onClick={() => dispatch({ type: "ENTER_MOVE_MODE" })} disabled={disabled || animationLocked || !canMove}>
           <StepForward size={16} /> Move
         </button>
-        <button type="button" onClick={() => dispatch({ type: "ENTER_ATTACK_MODE" })} disabled={disabled || !canAttack}>
+        <button className="action-button action-button--attack" type="button" onClick={() => dispatch({ type: "ENTER_ATTACK_MODE" })} disabled={disabled || animationLocked || !canAttack}>
           <Sword size={16} /> Attack
         </button>
-        <button type="button" disabled>
+        <button className="action-button action-button--guard" type="button" disabled>
           <ShieldCheck size={16} /> Guard
         </button>
-        <button type="button" disabled>
+        <button className="action-button action-button--skill" type="button" disabled>
           <Sparkles size={16} /> Skill
         </button>
-        <button type="button" onClick={() => dispatch({ type: "END_TURN" })} disabled={disabled || (state.phase !== "action" && state.phase !== "summon")}>
+        <button className="action-button action-button--end" type="button" onClick={() => dispatch({ type: "END_TURN" })} disabled={disabled || (state.phase !== "action" && state.phase !== "summon")}>
           End Turn
         </button>
-        <button type="button" className="danger-button" onClick={() => dispatch({ type: "RESET_GAME" })}>
+        <button type="button" className="action-button danger-button" onClick={() => dispatch({ type: "RESET_GAME" })}>
           <TimerReset size={16} /> Reset
         </button>
       </div>

@@ -1,0 +1,40 @@
+:root {
+  --bg-deep: #070a0f;
+  --bg-panel: #111827;
+  --bg-panel-2: #1b2433;
+  --gold-1: #f7d77a;
+  --gold-2: #b88736;
+  --gold-3: #6f4b1f;
+  --blue-1: #38bdf8;
+  --blue-2: #2563eb;
+  --blue-glow: rgba(56, 189, 248, 0.65);
+  --red-1: #fb7185;
+  --red-2: #b91c1c;
+  --red-glow: rgba(248, 113, 113, 0.65);
+  --green-1: #86efac;
+  --purple-1: #c084fc;
+  --stone-1: #29313d;
+  --stone-2: #1f2937;
+  --stone-3: #111827;
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --cell-w: calc(100% / 13);
+  --cell-h: calc(100% / 9);
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 40%, rgba(37, 99, 235, 0.22), transparent 35%),
+    radial-gradient(circle at 80% 45%, rgba(185, 28, 28, 0.22), transparent 35%),
+    linear-gradient(180deg, #05070b 0%, #101624 100%);
+  color: var(--text-main);
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(247, 215, 122, 0.85);
+  outline-offset: 2px;
+}

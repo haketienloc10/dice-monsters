@@ -100,6 +100,50 @@ export type GamePhase = "roll" | "summon" | "action" | "gameOver";
 
 export type InteractionMode = "none" | "placing" | "moving" | "attacking";
 
+export type GameEvent =
+  | {
+      id: string;
+      type: "rolled";
+      playerId: PlayerId;
+      results: RollResult[];
+    }
+  | {
+      id: string;
+      type: "summoned";
+      playerId: PlayerId;
+      monsterId: string;
+      position: BoardPosition;
+      placedCells: BoardPosition[];
+    }
+  | {
+      id: string;
+      type: "moved";
+      playerId: PlayerId;
+      monsterId: string;
+      from: BoardPosition;
+      to: BoardPosition;
+      distance: number;
+    }
+  | {
+      id: string;
+      type: "attacked";
+      playerId: PlayerId;
+      attackerId: string;
+      target: AttackTarget;
+      from: BoardPosition;
+      to: BoardPosition;
+      damage: number;
+      destroyedMonsterId?: string;
+      coreOwnerHit?: PlayerId;
+    }
+  | {
+      id: string;
+      type: "turnEnded";
+      from: PlayerId;
+      to: PlayerId;
+      phase: GamePhase;
+    };
+
 export type GameState = {
   board: BoardCell[][];
   players: Record<PlayerId, PlayerState>;
@@ -117,6 +161,7 @@ export type GameState = {
   highlightedCells: BoardPosition[];
   validAttackTargets: AttackTarget[];
   winner?: PlayerId;
+  lastEvent?: GameEvent;
   log: string[];
 };
 

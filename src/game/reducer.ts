@@ -10,6 +10,10 @@ import { getShapeCells, getValidPlacementAnchors, isValidDungeonPlacement } from
 import { endTurn } from "./rules/turn";
 import type { AttackTarget, GameAction, GameState } from "./types";
 
+function eventId(type: string): string {
+  return `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function clearInteraction(state: GameState): void {
   state.interactionMode = "none";
   state.highlightedCells = [];
@@ -48,6 +52,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       next.latestRoll = roll;
       next.summonCandidates = getSummonCandidates(roll);
       next.phase = next.summonCandidates.length > 0 ? "summon" : "action";
+      next.lastEvent = {
+        id: eventId("rolled"),
+        type: "rolled",
+        playerId: next.currentPlayer,
+        results: roll
+      };
       clearInteraction(next);
       addLog(
         next,
@@ -118,6 +128,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       next.selectedSummonDiceId = undefined;
       next.summonCandidates = [];
       next.phase = "action";
+      next.lastEvent = {
+        id: eventId("summoned"),
+        type: "summoned",
+        playerId: next.currentPlayer,
+        monsterId: instanceId,
+        position: { x: summonCell.x, y: summonCell.y },
+        placedCells: shapeCells.map((position) => ({ x: position.x, y: position.y }))
+      };
       clearInteraction(next);
       addLog(next, `${playerLogLabel(next)} summoned ${monsterDefinition.name} at (${summonCell.x},${summonCell.y}).`);
       return next;
@@ -171,6 +189,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       monster.x = action.x;
       monster.y = action.y;
       next.players[next.currentPlayer].crestPool.move -= distance;
+      next.lastEvent = {
+        id: eventId("moved"),
+        type: "moved",
+        playerId: next.currentPlayer,
+        monsterId: monster.instanceId,
+        from: { x: oldCell.x, y: oldCell.y },
+        to: { x: action.x, y: action.y },
+        distance
+      };
       clearInteraction(next);
       addLog(next, `${playerLogLabel(next)} moved ${monsterDefinitions[monster.definitionId].name} to (${action.x},${action.y}) for ${distance} move.`);
       return next;
@@ -203,6 +230,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const next = cloneGameState(state);
       const attacker = next.monsters[next.selectedMonsterId!];
       const attackerDefinition = monsterDefinitions[attacker.definitionId];
+      const from = { x: attacker.x, y: attacker.y };
       next.players[next.currentPlayer].crestPool.attack -= 1;
       attacker.hasActedAttack = true;
 
@@ -212,6 +240,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         const defenderDefinition = monsterDefinitions[defender.definitionId];
         const damage = calculateMonsterDamage(attackerDefinition.atk, defenderDefinition.def);
         defender.hp -= damage;
+        next.lastEvent = {
+          id: eventId("attacked"),
+          type: "attacked",
+          playerId: next.currentPlayer,
+          attackerId: attacker.instanceId,
+          target: action.target,
+          from,
+          to: { x: action.target.x, y: action.target.y },
+          damage
+        };
         addLog(next, `${playerLogLabel(next)} attacked ${defenderDefinition.name} for ${damage} damage.`);
         if (defender.hp <= 0) {
           const cell = getCell(next.board, defender);
@@ -220,11 +258,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           next.players[defender.owner].summonedMonsterIds = next.players[defender.owner].summonedMonsterIds.filter(
             (id) => id !== defender.instanceId
           );
+          next.lastEvent.destroyedMonsterId = defender.instanceId;
           addLog(next, `${defenderDefinition.name} was destroyed.`);
         }
       } else {
         const damage = attackerDefinition.atk;
         next.players[action.target.playerId].coreHp = Math.max(0, next.players[action.target.playerId].coreHp - damage);
+        next.lastEvent = {
+          id: eventId("attacked"),
+          type: "attacked",
+          playerId: next.currentPlayer,
+          attackerId: attacker.instanceId,
+          target: action.target,
+          from,
+          to: { x: action.target.x, y: action.target.y },
+          damage,
+          coreOwnerHit: action.target.playerId
+        };
         addLog(next, `${playerLogLabel(next)} attacked ${action.target.playerId} core for ${damage} damage.`);
         if (next.players[action.target.playerId].coreHp <= 0) {
           next.winner = next.currentPlayer;
@@ -240,6 +290,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "END_TURN": {
       if (state.phase !== "action" && state.phase !== "summon") return state;
       const next = endTurn(cloneGameState(state));
+      next.lastEvent = {
+        id: eventId("turnEnded"),
+        type: "turnEnded",
+        from: state.currentPlayer,
+        to: next.currentPlayer,
+        phase: next.phase
+      };
       addLog(next, `${playerLogLabel(state)} ended turn. ${next.currentPlayer} begins.`);
       return next;
     }

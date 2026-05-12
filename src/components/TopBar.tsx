@@ -19,8 +19,9 @@ export function TopBar({ state }: Props) {
   return (
     <header className="top-bar">
       <div className="top-player top-player--p1">
+        <span className="player-crest">◆ P1</span>
         <strong>{p1.name}</strong>
-        <span>Core HP: {p1.coreHp}</span>
+        <span className="core-readout">Core HP: {p1.coreHp}</span>
       </div>
       <div className="turn-display">
         <span>Turn {state.turnNumber}</span>
@@ -29,8 +30,9 @@ export function TopBar({ state }: Props) {
         {currentIsAI && state.phase !== "gameOver" && <span className="ai-thinking">AI is thinking...</span>}
       </div>
       <div className="top-player top-player--p2">
+        <span className="player-crest">P2 ▲</span>
         <strong>{p2.name} [AI]</strong>
-        <span>Core HP: {p2.coreHp}</span>
+        <span className="core-readout">Core HP: {p2.coreHp}</span>
       </div>
     </header>
   );
