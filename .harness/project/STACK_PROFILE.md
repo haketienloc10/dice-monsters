@@ -11,7 +11,7 @@ Ghi lại stack và tooling quan sát được. Discovery output chỉ là obser
 ## Generated Discovery
 
 <!-- HARNESS:GENERATED:START -->
-Generated at: `2026-05-12T00:25:13+07:00`
+Generated at: `2026-05-12T10:05:22+07:00`
 
 Discovery output records observed files and directories only.
 
@@ -37,19 +37,4 @@ Discovery output records observed files and directories only.
 
 ## Manual Notes
 
-- Runtime/app stack:
-  - Vite app using React 19, React DOM 19, and TypeScript.
-  - Package manager is npm; `package-lock.json` is present, so prefer `npm ci` for clean installs.
-  - Project uses ES modules via `"type": "module"` in `package.json`.
-- UI/tooling dependencies:
-  - `lucide-react` is available for icons.
-  - Styling is plain CSS in `src/styles/`; no Tailwind or component framework is present.
-- Test stack:
-  - Vitest for tests.
-  - Testing Library React for component smoke tests.
-  - `jsdom` is installed, but current `vite.config.ts` only defines Vite React plugin; verify actual test environment before adding DOM-heavy tests.
-- TypeScript/build config:
-  - `tsconfig.json` references `tsconfig.app.json` and `tsconfig.node.json`.
-  - `npm run build` runs `tsc -b && vite build`.
-- Not observed:
-  - No backend service, database, API schema, Docker config, CI workflow, Java, or Python project files.
+- Thêm ghi chú stack local ở đây.

@@ -9,30 +9,38 @@ Nó thuộc quyền sở hữu của target repository sau khi install. Repo see
 ```txt
 .harness/
   INSTALLATION.md
+  HARNESS_SKILLS.md
   guides/
+  skills/
   templates/
   project/
   project-templates/
   scripts/
   backlog/
+  epics/
   runs/
 ```
 
+- `HARNESS_SKILLS.md`: registry ngắn để agent chọn Harness workflow skill cần load.
 - `guides/`: quy trình và policy cho agent.
+- `skills/`: workflow skill file được load theo registry, không load toàn bộ theo mặc định.
 - `templates/`: template artifact cho mỗi run.
 - `project/`: project adapter của target repo. Installer chỉ tạo file thiếu, không overwrite file đã có.
 - `project-templates/`: template trung lập dùng khi tạo project adapter mới.
 - `scripts/`: helper scripts như `new-run.sh`, `inspect-project.sh`, `verify.sh`.
 - `backlog/`: proposal cải tiến Harness local.
-- `runs/`: run history của target repo.
+- `epics/`: workstream/long-task coordination layer. Epic dùng cho task dài hơi, giữ roadmap, acceptance matrix, decision log, và run index.
+- `runs/`: execution units. Run dùng cho đơn vị thực thi nhỏ có thể verify.
 
 ## Sau khi install
 
-Chạy discovery:
+Ask your agent:
 
-```bash
-bash .harness/scripts/inspect-project.sh
+```txt
+Read `.harness/HARNESS_SKILLS.md` and run the `project-sync` Harness workflow skill.
 ```
+
+Không cần cài native-agent skills.
 
 Chạy verification mặc định:
 

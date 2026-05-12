@@ -11,7 +11,7 @@ Ghi lại bản đồ project ở mức quan sát được: source directories, 
 ## Generated Discovery
 
 <!-- HARNESS:GENERATED:START -->
-Generated at: `2026-05-12T00:25:13+07:00`
+Generated at: `2026-05-12T10:05:22+07:00`
 
 Discovery output records observed project layout only.
 
@@ -22,8 +22,6 @@ Discovery output records observed project layout only.
 
 ## Top-Level Directories
 
-- `dist/`
-- `node_modules/`
 - `src/`
 <!-- HARNESS:GENERATED:END -->
 

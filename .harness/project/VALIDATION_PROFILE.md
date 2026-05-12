@@ -11,7 +11,7 @@ Ghi lại validation commands, test strategy, smoke checks, và các điều ki�
 ## Generated Discovery
 
 <!-- HARNESS:GENERATED:START -->
-Generated at: `2026-05-12T00:25:13+07:00`
+Generated at: `2026-05-12T10:05:22+07:00`
 
 Discovery output records candidate validation commands from observed files only.
 
@@ -45,4 +45,3 @@ Discovery output records candidate validation commands from observed files only.
   - Prefer component tests near `src/components/*.test.tsx` for UI flows.
   - For reducer or interaction changes, test the state transition directly when feasible and add a UI smoke only for user-facing wiring.
 - Known flaky checks:
-  - None documented.

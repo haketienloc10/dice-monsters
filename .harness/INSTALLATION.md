@@ -1,6 +1,6 @@
 # Harness Installation
 
-Installed at: 2026-05-11T23:50:08+07:00
+Installed at: 2026-05-12T10:03:17+07:00
 
 This target repository owns its installed `.harness/` tree.
 
@@ -8,16 +8,22 @@ This target repository owns its installed `.harness/` tree.
 
 - `.harness/project/*` belongs to this target repository. The installer creates missing files only and does not overwrite existing project adapter files.
 - `.harness/runs/RUN_INDEX.md` and run history belong to this target repository. The installer does not reset an existing run index and does not copy run history from the seed template.
+- `.harness/epics/*` belongs to target repository.
+- Installer does not reset `.harness/epics/EPIC_INDEX.md` and does not copy epic history from seed.
 - `.harness/backlog/HARNESS_BACKLOG.md` belongs to this target repository. The installer does not overwrite it if it already exists.
 - Kernel folders may be replaced during an explicit update:
   - `.harness/guides/`
   - `.harness/templates/`
   - `.harness/project-templates/`
   - `.harness/scripts/`
+- Seeded Harness workflow skill files are copied into `.harness/skills/` without deleting other local skill files.
 
 ## Recommended Next Steps
 
-```bash
-bash .harness/scripts/inspect-project.sh
-bash .harness/scripts/verify.sh
+Ask your agent:
+
+```txt
+Read `.harness/HARNESS_SKILLS.md` and run the `project-sync` Harness workflow skill.
 ```
+
+No native-agent skill installation is required.
