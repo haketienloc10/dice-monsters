@@ -36,3 +36,5 @@ Evidence:
 ## Harness Workflow
 
 For non-trivial implementation tasks, follow root `AGENTS.md`: create a Harness run, write planning/contract/evaluation artifacts, and verify with real commands. For small maintenance tasks such as project context refresh, keep edits scoped to `.harness/project/*`.
+
+After the 2026-05-12 Harness seed update, source-navigation and change-impact notes live in `.harness/codebase/*`. Before non-trivial coding work, read `.harness/codebase/CODEBASE_INDEX.md` after project context, then inspect actual source files before editing.
