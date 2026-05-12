@@ -1,7 +1,8 @@
 .panel {
+  min-width: 0;
   border: 1px solid rgba(184, 137, 61, 0.72);
   border-radius: 8px;
-  padding: 14px;
+  padding: 12px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
     rgba(17, 24, 39, 0.9);
@@ -38,6 +39,7 @@
 
 .core-panel {
   position: relative;
+  flex: 0 0 auto;
   overflow: hidden;
 }
 
@@ -59,7 +61,7 @@
 .muted,
 .skill-text,
 .shape-panel span,
-.game-log li {
+.battle-log-panel li {
   color: var(--text-muted);
 }
 
@@ -95,17 +97,18 @@
 
 .crest-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
+  width: 100%;
 }
 
 .crest-pill {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
   gap: 6px;
   align-items: center;
-  min-height: 48px;
-  padding: 7px 8px;
+  min-height: 42px;
+  padding: 6px 7px;
   border: 1px solid rgba(255, 231, 170, 0.18);
   border-radius: 8px;
   background:
@@ -120,7 +123,7 @@
 .crest-gem {
   display: grid;
   place-items: center;
-  width: 32px;
+  width: 29px;
   aspect-ratio: 1;
   border: 1px solid rgba(247, 215, 122, 0.35);
   border-radius: 8px;
@@ -153,9 +156,11 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 14px;
+  gap: 10px;
   align-items: center;
-  padding: 12px;
+  width: 100%;
+  min-height: 0;
+  padding: 10px;
   border: 1px solid rgba(184, 137, 61, 0.72);
   border-radius: 10px;
   background:
@@ -166,8 +171,16 @@
 
 .dice-tray,
 .crest-bar,
-.game-log {
+.battle-log-panel {
   min-width: 0;
+}
+
+.crest-bar {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .dice-tray__header {
@@ -187,7 +200,9 @@
 .dice-results {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
 }
 
 .die-card {
@@ -196,10 +211,10 @@
   grid-template-columns: 1fr auto;
   gap: 4px;
   align-items: center;
-  min-height: 90px;
-  padding: 10px;
+  min-height: 84px;
+  padding: 9px;
   border: 2px solid #7c5b28;
-  border-radius: 16px;
+  border-radius: 12px;
   background:
     radial-gradient(circle at 30% 25%, #fff 0%, #f5ead0 35%, #c9a970 100%);
   color: #2a1b0d;
@@ -247,7 +262,7 @@
 }
 
 .crest-face {
-  font-size: 2.25rem;
+  font-size: 2rem;
 }
 
 .primary-button,
@@ -293,16 +308,27 @@ button:disabled {
 }
 
 .button-stack {
-  margin-top: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .button-stack button {
   display: inline-flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 3px;
   align-items: center;
   justify-content: center;
+  min-height: 54px;
+  padding: 6px 4px;
+  overflow: hidden;
+  font-size: 0.72rem;
   font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.action-panel .panel-heading {
+  margin-bottom: 8px;
 }
 
 .action-button--summon { border-color: rgba(186, 230, 253, 0.8); background: linear-gradient(180deg, #1e3a5f, #172033); }
@@ -318,8 +344,8 @@ button:disabled {
 }
 
 .monster-info h3 {
-  margin: 10px 0 2px;
-  font-size: 1.18rem;
+  margin: 8px 0 2px;
+  font-size: 1.05rem;
 }
 
 .monster-subtitle {
@@ -331,7 +357,7 @@ button:disabled {
   position: relative;
   display: grid;
   place-items: center;
-  height: 126px;
+  height: 74px;
   border: 1px solid rgba(247, 215, 122, 0.38);
   border-radius: 8px;
   background:
@@ -351,12 +377,12 @@ button:disabled {
 .monster-card-portrait__sigil {
   display: grid;
   place-items: center;
-  width: 68px;
+  width: 48px;
   aspect-ratio: 1;
   border: 2px solid rgba(247, 215, 122, 0.48);
   border-radius: 999px;
   color: var(--gold-1);
-  font-size: 2.3rem;
+  font-size: 1.6rem;
   font-weight: 900;
   background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.3), transparent 30%), #111827;
   box-shadow: 0 0 28px rgba(247, 215, 122, 0.16), inset 0 0 18px rgba(0, 0, 0, 0.42);
@@ -382,9 +408,17 @@ button:disabled {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 7px 12px;
-  margin-top: 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 5px 10px;
+  margin-top: 8px;
+  font-size: 0.88rem;
+}
+
+.stat-grid strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stat-grid span,
@@ -396,9 +430,9 @@ button:disabled {
 .skill-text {
   display: grid;
   gap: 4px;
-  margin-top: 12px;
+  margin-top: 8px;
   margin-bottom: 0;
-  padding: 10px;
+  padding: 8px;
   border: 1px solid rgba(255, 231, 170, 0.12);
   border-radius: 8px;
   background: rgba(7, 10, 15, 0.42);
@@ -413,7 +447,7 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .status-row span {
@@ -429,10 +463,10 @@ button:disabled {
 
 .mini-shape {
   display: grid;
-  grid-template-columns: repeat(5, 22px);
-  grid-template-rows: repeat(5, 22px);
-  gap: 4px;
-  margin-top: 12px;
+  grid-template-columns: repeat(5, 18px);
+  grid-template-rows: repeat(5, 18px);
+  gap: 3px;
+  margin-top: 8px;
 }
 
 .mini-shape span {
@@ -441,18 +475,58 @@ button:disabled {
   box-shadow: 0 0 10px rgba(247, 215, 122, 0.24);
 }
 
-.game-log {
+.battle-log-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
-.game-log ol {
+.battle-log-header {
   display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 10px;
+}
+
+.battle-log-header h2 {
+  margin: 0;
+}
+
+.battle-log-header span {
+  color: var(--text-faint);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.battle-log-list {
+  display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 7px;
+  min-height: 0;
   margin: 0;
-  padding: 0;
+  padding: 0 6px 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   list-style: none;
+}
+
+.battle-log-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.battle-log-list::-webkit-scrollbar-track {
+  background: rgba(7, 10, 15, 0.4);
+  border-radius: 999px;
+}
+
+.battle-log-list::-webkit-scrollbar-thumb {
+  background: rgba(247, 215, 122, 0.35);
+  border-radius: 999px;
 }
 
 .log-entry {
@@ -506,6 +580,6 @@ button:disabled {
 
 @media (max-width: 1400px) and (min-width: 761px) {
   .crest-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

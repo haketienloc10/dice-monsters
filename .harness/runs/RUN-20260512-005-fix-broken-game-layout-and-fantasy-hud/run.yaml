@@ -1,0 +1,31 @@
+run_id: RUN-20260512-005-fix-broken-game-layout-and-fantasy-hud
+task_slug: fix-broken-game-layout-and-fantasy-hud
+epic_id: ""
+status: completed
+branch: ""
+worktree: ""
+owner: agent
+created_at: 2026-05-12T12:05:47+07:00
+updated_at: 2026-05-12T12:21:00+07:00
+
+scope:
+  expected_files:
+    - src/components/GameScreen.tsx
+    - src/components/GameLog.tsx
+    - src/game/rules/board.ts
+    - src/styles/globals.css
+    - src/styles/layout.css
+    - src/styles/hud.css
+    - src/styles/board.css
+  protected_files:
+    - .harness/guides/**
+    - .harness/templates/**
+    - .harness/scripts/**
+
+conflict_policy:
+  allow_parallel: true
+  require_branch_isolation: false
+  require_worktree_isolation: false
+  conflict_check_required: true
+
+notes: ""

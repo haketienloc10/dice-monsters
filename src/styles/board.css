@@ -1,9 +1,12 @@
 .board-frame {
+  flex: 1;
   position: relative;
   display: grid;
   place-items: center;
+  min-width: 0;
   min-height: 0;
-  padding: 14px;
+  width: 100%;
+  padding: 12px;
   overflow: hidden;
   border: 2px solid rgba(247, 215, 122, 0.45);
   border-radius: 18px;
@@ -21,11 +24,11 @@
 .board-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(13, minmax(38px, 1fr));
-  grid-template-rows: repeat(9, minmax(38px, 1fr));
-  width: auto;
-  height: 100%;
-  max-width: min(100%, 980px);
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+  width: 100%;
+  height: auto;
+  max-width: min(100%, 1060px);
   max-height: 100%;
   aspect-ratio: 13 / 9;
   place-self: center;

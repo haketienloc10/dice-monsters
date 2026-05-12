@@ -3,7 +3,7 @@ type Props = {
 };
 
 export function GameLog({ log }: Props) {
-  const entries = log.slice(-20).reverse();
+  const entries = log.slice(0, 30);
 
   function metaFor(event: string) {
     if (event.includes("rolled")) return { icon: "🎲", tone: "roll" };
@@ -16,9 +16,12 @@ export function GameLog({ log }: Props) {
   }
 
   return (
-    <section className="panel game-log" aria-label="Game log">
-      <h2>Battle Feed</h2>
-      <ol>
+    <section className="panel battle-log-panel" aria-label="Game log">
+      <div className="battle-log-header">
+        <h2>Battle Feed</h2>
+        <span>{entries.length}/30</span>
+      </div>
+      <ol className="battle-log-list">
         {entries.map((event, index) => (
           <li className={index === 0 ? "log-entry log-entry--new" : "log-entry"} key={`${event}-${index}`}>
             <span className={`log-entry__icon log-entry__icon--${metaFor(event).tone}`}>{metaFor(event).icon}</span>

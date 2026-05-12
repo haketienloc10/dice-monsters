@@ -4,6 +4,7 @@
 |---|---|---|---|---|---|---|---|---|---|
 | run |  | RUN-20260512-003-upgrade-polished-fantasy-strategy-ui | upgrade-polished-fantasy-strategy-ui | completed |  | /home/locdt/Notes/VSCode/dice-monsters | agent | 2026-05-12T11:34:07+07:00 | 2026-05-12T11:41:30+07:00 |
 | run |  | RUN-20260512-004-add-real-e2e-tests | add-real-e2e-tests | completed |  | /home/locdt/Notes/VSCode/dice-monsters | agent | 2026-05-12T11:45:21+07:00 | 2026-05-12T11:55:20+07:00 |
+| run |  | RUN-20260512-005-fix-broken-game-layout-and-fantasy-hud | fix-broken-game-layout-and-fantasy-hud | completed |  | /home/locdt/Notes/VSCode/dice-monsters | agent | 2026-05-12T12:05:47+07:00 | 2026-05-12T12:21:00+07:00 |
 
 ## Status Values
 

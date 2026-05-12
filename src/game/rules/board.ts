@@ -80,5 +80,5 @@ export function cloneGameState(state: GameState): GameState {
 }
 
 export function addLog(state: GameState, message: string): void {
-  state.log = [message, ...state.log].slice(0, 20);
+  state.log = [message, ...state.log].slice(0, 30);
 }

@@ -141,45 +141,59 @@ export function GameScreen() {
   const isActionAnimating = animationLock === "summon" || animationLock === "move" || animationLock === "attack";
 
   return (
-    <main className="game-shell">
-      <TopBar state={state} />
-      <div key={`${phaseBannerKey}-${state.phase}-${state.currentPlayer}`} className="phase-banner" role="status">
-        {isAITurn && state.phase !== "gameOver" ? "P2 AI THINKING" : phaseLabel}
-      </div>
+    <main className="game-root">
+      <div className="game-shell">
+        <TopBar state={state} />
+        <div key={`${phaseBannerKey}-${state.phase}-${state.currentPlayer}`} className="phase-banner" role="status">
+          {isAITurn && state.phase !== "gameOver" ? "P2 AI THINKING" : phaseLabel}
+        </div>
 
-      <section className="game-layout">
-        <aside className="hud-column hud-column--left">
-          <PlayerCorePanel player={state.players.P1} active={state.currentPlayer === "P1"} />
-          <PlayerCorePanel player={state.players.P2} active={state.currentPlayer === "P2"} />
-        </aside>
+        <section className="main-layout">
+          <aside className="left-column">
+            <PlayerCorePanel player={state.players.P1} active={state.currentPlayer === "P1"} />
+            <PlayerCorePanel player={state.players.P2} active={state.currentPlayer === "P2"} />
+          </aside>
 
-        <section className="board-stage" aria-label="Dungeon board area">
-          <Board
-            state={state}
-            placementPreview={placementPreview}
-            effects={visualEffects}
-            onCellClick={handleCellClick}
-            onCellHover={(position) => setHoveredCell(position)}
-          />
-          <section className="bottom-command-deck" aria-label="Command deck">
+          <section className="board-area" aria-label="Dungeon board area">
+            <Board
+              state={state}
+              placementPreview={placementPreview}
+              effects={visualEffects}
+              onCellClick={handleCellClick}
+              onCellHover={(position) => setHoveredCell(position)}
+            />
+            {isAITurn && <div className="ai-status" role="status">AI is thinking...</div>}
+          </section>
+
+          <aside className="right-column">
+            <MonsterInfoPanel state={state} />
+            <ActionPanel state={state} dispatch={dispatchHumanAction} disabled={isAITurn} animationLocked={isActionAnimating} />
+            <TileShapePreview state={state} />
+            <GameLog log={state.log} />
+          </aside>
+        </section>
+
+        <section className="bottom-hud" aria-label="Command deck">
+          <div className="stock-card" aria-label="Dungeon stock">
+            <span>Dungeon Stock</span>
+            <strong>{state.summonCandidates.length || "Ready"}</strong>
+            <small>{state.phase === "summon" ? "Shape candidates" : `Turn ${state.turnNumber} command line`}</small>
+          </div>
+          <div className="bottom-hud__dice">
             <DiceTray
               state={state}
               onRoll={() => dispatchHumanAction({ type: "ROLL_DICE" }, { reason: "dice", duration: 850 })}
               disabled={isAITurn || isDiceRolling}
               rolling={isDiceRolling}
             />
+          </div>
+          <div className="bottom-hud__crests">
             <CrestBar player={state.players[state.currentPlayer]} lastEvent={state.lastEvent} />
-            <GameLog log={state.log} />
-          </section>
-          {isAITurn && <div className="ai-status" role="status">AI is thinking...</div>}
+          </div>
         </section>
 
-        <aside className="hud-column hud-column--right">
-          <MonsterInfoPanel state={state} />
-          <ActionPanel state={state} dispatch={dispatchHumanAction} disabled={isAITurn} animationLocked={isActionAnimating} />
-          <TileShapePreview state={state} />
-        </aside>
-      </section>
+        <div className="desktop-warning" role="status">This game UI is optimized for desktop screens.</div>
+      </div>
 
       {state.phase === "gameOver" && (
         <section className="game-over-overlay" role="dialog" aria-label="Game over">
