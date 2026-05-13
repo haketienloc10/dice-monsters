@@ -6,6 +6,10 @@ export function calculateMonsterDamage(attackerAtk: number, defenderDef: number)
   return Math.max(1, attackerAtk - defenderDef);
 }
 
+export function calculatePowerChargeMonsterDamage(attackerAtk: number, defenderDef: number): number {
+  return Math.max(0, attackerAtk + 1 - defenderDef);
+}
+
 export function getValidAttackTargets(state: GameState, attackerId: string): AttackTarget[] {
   const attacker = state.monsters[attackerId];
   if (!attacker) return [];

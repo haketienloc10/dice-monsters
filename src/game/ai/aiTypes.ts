@@ -10,6 +10,7 @@ export type AIPlannedAction =
   | { type: "MOVE_MONSTER"; x: number; y: number }
   | { type: "ENTER_ATTACK_MODE" }
   | { type: "ATTACK_TARGET"; target: AttackTarget }
+  | { type: "USE_POWER_CHARGE"; monsterId: string }
   | { type: "END_TURN" };
 
 export type AIPlacementOption = { x: number; y: number; rotation: number };

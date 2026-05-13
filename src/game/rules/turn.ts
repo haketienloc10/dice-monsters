@@ -28,5 +28,11 @@ export function startTurn(state: GameState, playerId: PlayerId): GameState {
 export function endTurn(state: GameState): GameState {
   const nextPlayer = getOpponent(state.currentPlayer);
   const nextTurnNumber = state.currentPlayer === "P2" ? state.turnNumber + 1 : state.turnNumber;
-  return startTurn({ ...state, turnNumber: nextTurnNumber }, nextPlayer);
+  const monsters = Object.fromEntries(
+    Object.entries(state.monsters).map(([id, monster]) => [
+      id,
+      monster.owner === state.currentPlayer ? { ...monster, powerChargeActive: undefined } : { ...monster }
+    ])
+  );
+  return startTurn({ ...state, monsters, turnNumber: nextTurnNumber }, nextPlayer);
 }

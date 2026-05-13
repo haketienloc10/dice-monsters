@@ -3,7 +3,8 @@ import { diceCatalog } from "../data/diceCatalog";
 import { monsters } from "../data/monsters";
 import { createInitialState } from "../initialState";
 import type { GameState, MonsterInstance, PlayerId } from "../types";
-import { calculateMonsterDamage, getValidAttackTargets } from "./combat";
+import { gameReducer } from "../reducer";
+import { calculateMonsterDamage, calculatePowerChargeMonsterDamage, getValidAttackTargets } from "./combat";
 import { getCell } from "./board";
 import { getSummonCandidates, rollDicePool } from "./dice";
 import { getMovementDistance, getReachableCells } from "./movement";
@@ -146,6 +147,11 @@ describe("combat rules", () => {
     expect(calculateMonsterDamage(4, 1)).toBe(3);
   });
 
+  it("calculates Power Charge monster damage with +1 ATK and no minimum damage", () => {
+    expect(calculatePowerChargeMonsterDamage(2, 2)).toBe(1);
+    expect(calculatePowerChargeMonsterDamage(2, 5)).toBe(0);
+  });
+
   it("targets the opponent core only through attack range", () => {
     const state = createInitialState();
     addMonster(state, {
@@ -172,6 +178,108 @@ describe("combat rules", () => {
   });
 });
 
+describe("Power Charge", () => {
+  it("spends 1 Magic and marks a valid current-player board monster", () => {
+    const state = { ...createInitialState(), phase: "action" as const };
+    state.players.P1.crestPool.magic = 1;
+    addMonster(state, {
+      instanceId: "p1-mage",
+      definitionId: "rune-mage",
+      owner: "P1",
+      x: 1,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false
+    });
+
+    const next = gameReducer(state, { type: "USE_POWER_CHARGE", monsterId: "p1-mage" });
+
+    expect(next.players.P1.crestPool.magic).toBe(0);
+    expect(next.monsters["p1-mage"].powerChargeActive).toBe(true);
+    expect(next.lastEvent?.type).toBe("powerCharged");
+    expect(next.log[0]).toMatch(/Power Charge/);
+  });
+
+  it("rejects invalid Power Charge targets without changing state", () => {
+    const state = { ...createInitialState(), phase: "action" as const };
+    state.players.P1.crestPool.magic = 1;
+    addMonster(state, {
+      instanceId: "p2-imp",
+      definitionId: "shadow-imp",
+      owner: "P2",
+      x: 11,
+      y: 4,
+      hp: monsters["shadow-imp"].hp,
+      hasActedAttack: false
+    });
+
+    expect(gameReducer(state, { type: "USE_POWER_CHARGE", monsterId: "p2-imp" })).toBe(state);
+    const rollState = { ...state, phase: "roll" as const };
+    expect(gameReducer(rollState, { type: "USE_POWER_CHARGE", monsterId: "p2-imp" })).toBe(rollState);
+  });
+
+  it("uses boosted monster damage once and clears the effect", () => {
+    const state = { ...createInitialState(), phase: "action" as const };
+    state.players.P1.crestPool.attack = 1;
+    addMonster(state, {
+      instanceId: "p1-mage",
+      definitionId: "rune-mage",
+      owner: "P1",
+      x: 4,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false,
+      powerChargeActive: true
+    });
+    addMonster(state, {
+      instanceId: "p2-avian",
+      definitionId: "skyblade-avian",
+      owner: "P2",
+      x: 5,
+      y: 4,
+      hp: 2,
+      hasActedAttack: false
+    });
+    state.selectedMonsterId = "p1-mage";
+    state.interactionMode = "attacking";
+
+    const next = gameReducer(state, {
+      type: "ATTACK_TARGET",
+      target: { type: "monster", monsterId: "p2-avian", x: 5, y: 4 }
+    });
+
+    expect(next.monsters["p1-mage"].powerChargeActive).toBeUndefined();
+    expect(next.monsters["p2-avian"]).toBeUndefined();
+    expect(next.lastEvent?.type === "attacked" ? next.lastEvent.damage : 0).toBe(2);
+    expect(next.log.some((entry) => entry.includes("Power Charge was consumed"))).toBe(true);
+  });
+
+  it("does exactly 1 core damage when consumed against a core", () => {
+    const state = { ...createInitialState(), phase: "action" as const };
+    state.players.P1.crestPool.attack = 1;
+    addMonster(state, {
+      instanceId: "p1-mage",
+      definitionId: "rune-mage",
+      owner: "P1",
+      x: 10,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false,
+      powerChargeActive: true
+    });
+    state.selectedMonsterId = "p1-mage";
+    state.interactionMode = "attacking";
+
+    const next = gameReducer(state, {
+      type: "ATTACK_TARGET",
+      target: { type: "core", playerId: "P2", x: 12, y: 4 }
+    });
+
+    expect(next.players.P2.coreHp).toBe(createInitialState().players.P2.coreHp - 1);
+    expect(next.monsters["p1-mage"].powerChargeActive).toBeUndefined();
+  });
+});
+
 describe("turn rules", () => {
   it("switches current player and increments turn after P2", () => {
     const p2State = { ...createInitialState(), currentPlayer: "P2" as const, phase: "action" as const };
@@ -180,5 +288,34 @@ describe("turn rules", () => {
     expect(next.currentPlayer).toBe("P1");
     expect(next.turnNumber).toBe(2);
     expect(next.phase).toBe("roll");
+  });
+
+  it("clears only the ending player's active Power Charge effects", () => {
+    const state = { ...createInitialState(), phase: "action" as const };
+    addMonster(state, {
+      instanceId: "p1-mage",
+      definitionId: "rune-mage",
+      owner: "P1",
+      x: 1,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false,
+      powerChargeActive: true
+    });
+    addMonster(state, {
+      instanceId: "p2-imp",
+      definitionId: "shadow-imp",
+      owner: "P2",
+      x: 11,
+      y: 4,
+      hp: monsters["shadow-imp"].hp,
+      hasActedAttack: false,
+      powerChargeActive: true
+    });
+
+    const next = endTurn(state);
+
+    expect(next.monsters["p1-mage"].powerChargeActive).toBeUndefined();
+    expect(next.monsters["p2-imp"].powerChargeActive).toBe(true);
   });
 });

@@ -327,6 +327,11 @@ button:disabled {
   text-align: center;
 }
 
+.button-stack button small {
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
 .action-panel .panel-heading {
   margin-bottom: 8px;
 }

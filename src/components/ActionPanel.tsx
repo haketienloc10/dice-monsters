@@ -1,4 +1,5 @@
 import { Hourglass, RotateCw, ShieldCheck, Snowflake, Sparkles, StepForward, Sword, TimerReset } from "lucide-react";
+import { getCell } from "../game/rules/board";
 import { diceCatalog } from "../game/data/diceCatalog";
 import { monsters } from "../game/data/monsters";
 import type { GameAction, GameState } from "../game/types";
@@ -21,6 +22,13 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
     selectedMonster?.owner === state.currentPlayer &&
     !selectedMonster.hasActedAttack &&
     state.players[state.currentPlayer].crestPool.attack > 0;
+  const selectedMonsterCell = selectedMonster ? getCell(state.board, selectedMonster) : undefined;
+  const canPowerCharge =
+    state.phase === "action" &&
+    selectedMonster?.owner === state.currentPlayer &&
+    selectedMonsterCell?.monsterId === selectedMonster.instanceId &&
+    !selectedMonster.powerChargeActive &&
+    state.players[state.currentPlayer].crestPool.magic > 0;
 
   return (
     <section className="panel action-panel" aria-label="Actions">
@@ -63,6 +71,9 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
         </button>
         <button className="action-button action-button--attack" type="button" onClick={() => dispatch({ type: "ENTER_ATTACK_MODE" })} disabled={disabled || animationLocked || !canAttack}>
           <Sword size={16} /> Attack
+        </button>
+        <button className="action-button action-button--skill" type="button" onClick={() => selectedMonster && dispatch({ type: "USE_POWER_CHARGE", monsterId: selectedMonster.instanceId })} disabled={disabled || animationLocked || !canPowerCharge}>
+          <Sparkles size={16} /> Power Charge <small>1 Magic</small>
         </button>
         <button className="action-button action-button--guard" type="button" disabled>
           <ShieldCheck size={16} /> Guard

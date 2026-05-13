@@ -71,6 +71,7 @@ export type MonsterInstance = {
   y: number;
   hp: number;
   hasActedAttack: boolean;
+  powerChargeActive?: boolean;
 };
 
 export type TileOffset = {
@@ -138,6 +139,13 @@ export type GameEvent =
     }
   | {
       id: string;
+      type: "powerCharged";
+      playerId: PlayerId;
+      monsterId: string;
+      position: BoardPosition;
+    }
+  | {
+      id: string;
       type: "turnEnded";
       from: PlayerId;
       to: PlayerId;
@@ -176,5 +184,6 @@ export type GameAction =
   | { type: "MOVE_MONSTER"; x: number; y: number }
   | { type: "ENTER_ATTACK_MODE" }
   | { type: "ATTACK_TARGET"; target: AttackTarget }
+  | { type: "USE_POWER_CHARGE"; monsterId: string }
   | { type: "END_TURN" }
   | { type: "RESET_GAME" };

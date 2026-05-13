@@ -58,6 +58,7 @@ export function MonsterInfoPanel({ state }: Props) {
           )}
           <div className="status-row" aria-label="Monster status badges">
             <span>{monster.hasActedAttack ? "Acted" : "Ready"}</span>
+            {monster.powerChargeActive && <span>+1 ATK next attack</span>}
             <span>{visual?.label ?? "Unit"}</span>
           </div>
         </>

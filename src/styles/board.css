@@ -323,7 +323,8 @@
 }
 
 .monster-token__level,
-.monster-token__hp {
+.monster-token__hp,
+.monster-token__power {
   position: absolute;
   z-index: 3;
   display: grid;
@@ -349,6 +350,13 @@
   bottom: -7px;
   color: #fecaca;
   border: 1px solid rgba(248, 113, 113, 0.55);
+}
+
+.monster-token__power {
+  right: -7px;
+  top: -7px;
+  color: #e9d5ff;
+  border: 1px solid rgba(192, 132, 252, 0.66);
 }
 
 .board-effects {

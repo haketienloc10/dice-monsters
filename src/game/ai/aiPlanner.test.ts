@@ -93,6 +93,117 @@ describe("AI planner", () => {
     });
   });
 
+  it("uses Power Charge when it makes a legal monster attack lethal", () => {
+    const state = makeP2ActionState();
+    state.players.P2.crestPool.attack = 1;
+    state.players.P2.crestPool.magic = 1;
+    addMonster(state, {
+      instanceId: "p2-mage",
+      definitionId: "rune-mage",
+      owner: "P2",
+      x: 5,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false
+    });
+    addMonster(state, {
+      instanceId: "p1-avian",
+      definitionId: "skyblade-avian",
+      owner: "P1",
+      x: 6,
+      y: 4,
+      hp: 2,
+      hasActedAttack: false
+    });
+    state.selectedMonsterId = "p2-mage";
+
+    expect(getNextAIAction(state)).toEqual({ type: "USE_POWER_CHARGE", monsterId: "p2-mage" });
+  });
+
+  it("attacks the boosted lethal monster target after Power Charge is active", () => {
+    const state = makeP2ActionState();
+    state.players.P2.crestPool.attack = 1;
+    state.players.P2.crestPool.magic = 1;
+    addMonster(state, {
+      instanceId: "p2-mage",
+      definitionId: "rune-mage",
+      owner: "P2",
+      x: 5,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false,
+      powerChargeActive: true
+    });
+    addMonster(state, {
+      instanceId: "p1-avian",
+      definitionId: "skyblade-avian",
+      owner: "P1",
+      x: 6,
+      y: 4,
+      hp: 2,
+      hasActedAttack: false
+    });
+    state.selectedMonsterId = "p2-mage";
+    state.interactionMode = "attacking";
+
+    expect(getNextAIAction(state)).toEqual({
+      type: "ATTACK_TARGET",
+      target: { type: "monster", monsterId: "p1-avian", x: 6, y: 4 }
+    });
+  });
+
+  it("does not use Power Charge for core attacks or without Magic Crest", () => {
+    const coreState = makeP2ActionState();
+    coreState.players.P2.crestPool.attack = 1;
+    coreState.players.P2.crestPool.magic = 1;
+    addMonster(coreState, {
+      instanceId: "p2-mage",
+      definitionId: "rune-mage",
+      owner: "P2",
+      x: 1,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false
+    });
+    addMonster(coreState, {
+      instanceId: "p1-avian",
+      definitionId: "skyblade-avian",
+      owner: "P1",
+      x: 1,
+      y: 5,
+      hp: 2,
+      hasActedAttack: false
+    });
+    coreState.selectedMonsterId = "p2-mage";
+
+    expect(getNextAIAction(coreState)).toEqual({ type: "ENTER_ATTACK_MODE" });
+
+    const noMagicState = makeP2ActionState();
+    noMagicState.players.P2.crestPool.attack = 1;
+    noMagicState.players.P2.crestPool.magic = 0;
+    addMonster(noMagicState, {
+      instanceId: "p2-mage",
+      definitionId: "rune-mage",
+      owner: "P2",
+      x: 5,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false
+    });
+    addMonster(noMagicState, {
+      instanceId: "p1-avian",
+      definitionId: "skyblade-avian",
+      owner: "P1",
+      x: 6,
+      y: 4,
+      hp: 2,
+      hasActedAttack: false
+    });
+    noMagicState.selectedMonsterId = "p2-mage";
+
+    expect(getNextAIAction(noMagicState)).toEqual({ type: "ENTER_ATTACK_MODE" });
+  });
+
   it("does not include illegal movement through occupied cells", () => {
     const state = makeP2ActionState();
     state.players.P2.crestPool.move = 3;

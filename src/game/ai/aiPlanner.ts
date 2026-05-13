@@ -1,4 +1,6 @@
-import type { GameState } from "../types";
+import { monsters } from "../data/monsters";
+import { calculateMonsterDamage, calculatePowerChargeMonsterDamage } from "../rules/combat";
+import type { AttackTarget, GameState } from "../types";
 import type { AIPlannedAction } from "./aiTypes";
 import { scoreAttackTarget, scoreMoveOption, scorePlacementOption, scoreSummonCandidate } from "./aiScoring";
 import {
@@ -22,6 +24,12 @@ type BestMove = {
   score: number;
 };
 
+type PowerChargeAttack = {
+  attackerId: string;
+  target: Extract<AttackTarget, { type: "monster" }>;
+  score: number;
+};
+
 function findBestAttack(state: GameState): BestAttack | undefined {
   const playerId = state.currentPlayer;
   return Object.values(state.monsters)
@@ -35,6 +43,41 @@ function findBestAttack(state: GameState): BestAttack | undefined {
     )
     .filter((candidate) => candidate.score > 0)
     .sort((a, b) => b.score - a.score || a.attackerId.localeCompare(b.attackerId))[0];
+}
+
+function findPowerChargeAttack(state: GameState): PowerChargeAttack | undefined {
+  const playerId = state.currentPlayer;
+  if (
+    state.phase !== "action" ||
+    state.players[playerId].crestPool.magic <= 0 ||
+    state.players[playerId].crestPool.attack <= 0
+  ) {
+    return undefined;
+  }
+
+  const candidates: PowerChargeAttack[] = [];
+
+  for (const attacker of Object.values(state.monsters).filter(
+    (monster) => monster.owner === playerId && !monster.hasActedAttack && !monster.powerChargeActive
+  )) {
+    const attackerDefinition = monsters[attacker.definitionId];
+    for (const target of getLegalAttackOptions(state, attacker.instanceId)) {
+      if (target.type !== "monster") continue;
+      const defender = state.monsters[target.monsterId];
+      if (!defender) continue;
+      const defenderDefinition = monsters[defender.definitionId];
+      const normalDamage = calculateMonsterDamage(attackerDefinition.atk, defenderDefinition.def);
+      const chargedDamage = calculatePowerChargeMonsterDamage(attackerDefinition.atk, defenderDefinition.def);
+      if (normalDamage >= defender.hp || chargedDamage < defender.hp) continue;
+      candidates.push({
+        attackerId: attacker.instanceId,
+        target,
+        score: 6000 + defenderDefinition.level * 100 + defenderDefinition.atk * 10
+      });
+    }
+  }
+
+  return candidates.sort((a, b) => b.score - a.score || a.attackerId.localeCompare(b.attackerId))[0];
 }
 
 function findBestMove(state: GameState): BestMove | undefined {
@@ -75,6 +118,20 @@ function getSummonPhaseAIAction(state: GameState): AIPlannedAction {
 
 function getActionPhaseAIAction(state: GameState): AIPlannedAction {
   const bestAttack = findBestAttack(state);
+  const powerChargeAttack = bestAttack?.target.type === "core" ? undefined : findPowerChargeAttack(state);
+  if (powerChargeAttack) {
+    if (state.selectedMonsterId !== powerChargeAttack.attackerId) {
+      return { type: "SELECT_MONSTER", monsterId: powerChargeAttack.attackerId };
+    }
+    if (!state.monsters[powerChargeAttack.attackerId]?.powerChargeActive) {
+      return { type: "USE_POWER_CHARGE", monsterId: powerChargeAttack.attackerId };
+    }
+    if (state.interactionMode !== "attacking") {
+      return { type: "ENTER_ATTACK_MODE" };
+    }
+    return { type: "ATTACK_TARGET", target: powerChargeAttack.target };
+  }
+
   if (bestAttack) {
     if (state.selectedMonsterId !== bestAttack.attackerId) {
       return { type: "SELECT_MONSTER", monsterId: bestAttack.attackerId };

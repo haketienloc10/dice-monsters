@@ -3,7 +3,7 @@ import { diceCatalog } from "./data/diceCatalog";
 import { monsters as monsterDefinitions } from "./data/monsters";
 import { createInitialState } from "./initialState";
 import { addLog, cloneGameState, getCell, getOpponent, positionKey, samePosition } from "./rules/board";
-import { calculateMonsterDamage, getValidAttackTargets } from "./rules/combat";
+import { calculateMonsterDamage, calculatePowerChargeMonsterDamage, getValidAttackTargets } from "./rules/combat";
 import { addRolledCrests, getSummonCandidates, rollDicePool } from "./rules/dice";
 import { getMovementDistance, getReachableCells } from "./rules/movement";
 import { getShapeCells, getValidPlacementAnchors, isValidDungeonPlacement } from "./rules/summon";
@@ -222,6 +222,37 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return next;
     }
 
+    case "USE_POWER_CHARGE": {
+      if (state.phase !== "action") return state;
+      const monster = state.monsters[action.monsterId];
+      const cell = monster ? getCell(state.board, monster) : undefined;
+      if (
+        !monster ||
+        monster.owner !== state.currentPlayer ||
+        cell?.monsterId !== monster.instanceId ||
+        monster.powerChargeActive ||
+        state.players[state.currentPlayer].crestPool.magic <= 0
+      ) {
+        return state;
+      }
+
+      const next = cloneGameState(state);
+      const chargedMonster = next.monsters[action.monsterId];
+      const chargedDefinition = monsterDefinitions[chargedMonster.definitionId];
+      next.players[next.currentPlayer].crestPool.magic -= 1;
+      chargedMonster.powerChargeActive = true;
+      next.lastEvent = {
+        id: eventId("powerCharged"),
+        type: "powerCharged",
+        playerId: next.currentPlayer,
+        monsterId: chargedMonster.instanceId,
+        position: { x: chargedMonster.x, y: chargedMonster.y }
+      };
+      clearInteraction(next);
+      addLog(next, `${playerLogLabel(next)} used Power Charge on ${chargedDefinition.name}: +1 ATK next attack.`);
+      return next;
+    }
+
     case "ATTACK_TARGET": {
       if (state.phase !== "action" || state.interactionMode !== "attacking" || !state.selectedMonsterId) return state;
       const validTargets = getValidAttackTargets(state, state.selectedMonsterId);
@@ -231,6 +262,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const attacker = next.monsters[next.selectedMonsterId!];
       const attackerDefinition = monsterDefinitions[attacker.definitionId];
       const from = { x: attacker.x, y: attacker.y };
+      const wasPowerCharged = Boolean(attacker.powerChargeActive);
       next.players[next.currentPlayer].crestPool.attack -= 1;
       attacker.hasActedAttack = true;
 
@@ -238,7 +270,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         const defender = next.monsters[action.target.monsterId];
         if (!defender) return state;
         const defenderDefinition = monsterDefinitions[defender.definitionId];
-        const damage = calculateMonsterDamage(attackerDefinition.atk, defenderDefinition.def);
+        const damage = wasPowerCharged
+          ? calculatePowerChargeMonsterDamage(attackerDefinition.atk, defenderDefinition.def)
+          : calculateMonsterDamage(attackerDefinition.atk, defenderDefinition.def);
         defender.hp -= damage;
         next.lastEvent = {
           id: eventId("attacked"),
@@ -251,6 +285,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           damage
         };
         addLog(next, `${playerLogLabel(next)} attacked ${defenderDefinition.name} for ${damage} damage.`);
+        if (wasPowerCharged) {
+          attacker.powerChargeActive = undefined;
+          addLog(next, `${attackerDefinition.name}'s Power Charge was consumed.`);
+        }
         if (defender.hp <= 0) {
           const cell = getCell(next.board, defender);
           if (cell) cell.monsterId = undefined;
@@ -262,7 +300,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           addLog(next, `${defenderDefinition.name} was destroyed.`);
         }
       } else {
-        const damage = attackerDefinition.atk;
+        const damage = wasPowerCharged ? 1 : attackerDefinition.atk;
         next.players[action.target.playerId].coreHp = Math.max(0, next.players[action.target.playerId].coreHp - damage);
         next.lastEvent = {
           id: eventId("attacked"),
@@ -276,6 +314,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           coreOwnerHit: action.target.playerId
         };
         addLog(next, `${playerLogLabel(next)} attacked ${action.target.playerId} core for ${damage} damage.`);
+        if (wasPowerCharged) {
+          attacker.powerChargeActive = undefined;
+          addLog(next, `${attackerDefinition.name}'s Power Charge was consumed.`);
+        }
         if (next.players[action.target.playerId].coreHp <= 0) {
           next.winner = next.currentPlayer;
           next.phase = "gameOver";

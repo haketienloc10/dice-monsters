@@ -42,6 +42,7 @@ export function MonsterToken({ monster, selected = false, damaged = false, attac
       <span className="monster-token__aura" aria-hidden="true" />
       <span className="monster-token__icon" aria-hidden="true">{visual.icon}</span>
       <span className="monster-token__label">{visual.label}</span>
+      {monster.powerChargeActive && <span className="monster-token__power" aria-label="+1 ATK next attack">+1</span>}
       <span className="monster-token__level">L{definition.level}</span>
       <span className="monster-token__hp">{monster.hp}</span>
     </span>
