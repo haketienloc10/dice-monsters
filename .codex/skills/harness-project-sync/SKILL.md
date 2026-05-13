@@ -1,3 +1,8 @@
+---
+name: harness-project-sync
+description: Use when synchronizing Harness project-level context, project metadata, open questions, decisions, constraints, and reusable project knowledge.
+---
+
 # Harness Project Sync
 
 Use this skill to inspect the installed Harness context and the real host project, then create or update `.harness/project/*` with evidence-backed project context.

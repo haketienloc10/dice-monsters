@@ -1,3 +1,8 @@
+---
+name: harness-lifecycle
+description: Use when executing the Harness role lifecycle, including planner, contract reviewer, generator, evaluator, run state transitions, artifacts, and role separation rules.
+---
+
 # Harness Lifecycle
 
 Use before non-trivial implementation work to enforce lifecycle state, role separation, Codex project-scoped agents, and manifest audit.

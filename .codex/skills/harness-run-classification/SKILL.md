@@ -1,3 +1,8 @@
+---
+name: harness-run-classification
+description: Use when classifying a user request into the correct Harness run type, including simple run, complex run, epic, child run, replan, or blocked workflow.
+---
+
 # Harness Run Classification
 
 Use before creating any Harness run.

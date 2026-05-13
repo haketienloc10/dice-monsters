@@ -1,3 +1,8 @@
+---
+name: harness-codebase-sync
+description: Use when updating or refreshing Harness codebase knowledge for the target project so future runs can avoid redundant source discovery while keeping project understanding current.
+---
+
 # Harness Codebase Sync
 
 Use this skill to create or update `.harness/codebase/*` as a lightweight source-navigation and change-impact map for future coding runs.

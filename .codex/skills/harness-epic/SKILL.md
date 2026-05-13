@@ -1,3 +1,8 @@
+---
+name: harness-epic
+description: Use when a request is too large for one Harness run and must be decomposed into an epic with child runs, contracts, dependencies, acceptance criteria, and evaluation gates.
+---
+
 # Harness Epic
 
 Use for long-running or multi-phase tasks that must be decomposed into independently verifiable child runs.
