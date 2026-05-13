@@ -2,20 +2,30 @@
 
 ## Luồng mặc định
 
-Default workflow là multi-agent / multi-session. Production-grade work yêu cầu handoff giữa các runtime session/agent riêng:
+Default workflow là strict template-based subagent orchestration:
 
 ```txt
 User Request
   -> Classify Request
   -> Epic or Normal Run
-  -> Planner Agent
-  -> Contract Reviewer Agent
-  -> Generator Agent
-  -> Evaluator Agent
+  -> Planner subagent from `.harness/subagents/planner.md`
+  -> Contract Reviewer subagent from `.harness/subagents/contract-reviewer.md`
+  -> Generator subagent from `.harness/subagents/generator.md`
+  -> Evaluator subagent from `.harness/subagents/evaluator.md`
   -> Final Summary
 ```
 
-Single-agent simulation chỉ được dùng như degraded fallback cho local experimentation, low-risk documentation-only tasks, learning/demo workflows, hoặc task được user đánh dấu rõ là fallback-allowed. Fallback bị cấm cho production implementation, Epic, child runs, UI/API behaviour implementation, và task cần independent review/evaluation.
+Không có degraded single-session fallback.
+
+If subagent spawning is unavailable, block the run before Planner execution.
+
+When a phase requires another role, call `.harness/scripts/dispatch-role.sh` and spawn the corresponding role subagent from its fixed template.
+
+Coordinator chỉ được điều phối. Coordinator không được implement, debug, repair, review, verify, approve, edit source/tests/config, hoặc viết lifecycle role artifact thay subagent.
+
+Do not create `HANDOFF.md`.
+
+Each role artifact may include a short "Next role" note for traceability, but this note is not a handoff file and must not replace subagent spawning.
 
 ## Bootstrap Run
 
@@ -25,7 +35,8 @@ Single-agent simulation chỉ được dùng như degraded fallback cho local ex
 4. Nếu Epic required, tạo Epic và child-run plan. Không tạo normal run cho task broad/multi-phase.
 5. Chỉ tạo normal run nếu bounded và verify được như một đơn vị.
 6. Tạo normal run bằng `bash .harness/scripts/new-run.sh <task-slug>` hoặc child run bằng `bash .harness/scripts/new-run.sh --within <EPIC-ID> <task-slug>`.
-7. Enforce lifecycle state và role separation bằng `.harness/guides/LIFECYCLE_ORCHESTRATION.md`; nếu có Codex subagents, dùng `.harness/guides/SUBAGENT_EXECUTION.md`.
+7. Enforce lifecycle state và role separation bằng `.harness/guides/LIFECYCLE_ORCHESTRATION.md` và `.harness/guides/SUBAGENT_EXECUTION.md`.
+8. Nếu runtime không thể spawn subagents, update `run-manifest.md`, set `BLOCKED_FOR_EXECUTOR_UNAVAILABLE`, và dừng.
 
 ## Planner Phase
 
@@ -48,7 +59,7 @@ Outputs:
 - `01-planner-brief.md`;
 - `02-implementation-contract.md`.
 
-Planner Agent phải kết thúc bằng handoff note cho Contract Reviewer Agent.
+Planner Agent có thể ghi "Next role" note cho Contract Reviewer Agent để traceability.
 Planner Agent phải dừng sau `02-implementation-contract.md`; không implement và không tự approve contract.
 
 ## Contract Review Phase
@@ -69,15 +80,15 @@ Forbidden:
 
 Outputs:
 
-- `03-evaluator-contract-review.md`.
+- `03-contract-review.md`.
 
 Decision:
 
-- `APPROVED`: Generator may start.
-- `REJECTED`: Planner must revise contract before implementation.
+- `approved`: Generator may start.
+- `rejected_requires_revision`: Planner must revise contract before implementation.
 
-Contract Reviewer Agent phải là runtime session khác với Planner Agent trong production mode.
-Contract Reviewer Agent phải dừng sau `03-evaluator-contract-review.md`.
+Contract Reviewer must be a spawned subagent from `.harness/subagents/contract-reviewer.md`.
+Contract Reviewer Agent phải dừng sau `03-contract-review.md`.
 
 ## Generator Phase
 
@@ -96,11 +107,28 @@ Forbidden:
 Outputs:
 
 - code changes;
-- `04-generator-worklog.md`;
-- `06-fix-report.md` if applicable.
+- `04-implementation-report.md`.
 
-Generator Agent chỉ implement sau khi `03-evaluator-contract-review.md` có `Status: APPROVED`.
-Generator Agent phải dừng sau `04-generator-worklog.md` hoặc `06-fix-report.md`; không tự evaluate.
+Generator Agent chỉ implement sau khi `03-contract-review.md` có `Status: approved`.
+Generator Agent phải dừng sau `04-implementation-report.md`; không tự evaluate.
+
+## Rework Routing Phase
+
+Khi `05-evaluator-report.md` trả `FAIL`, `REJECTED`, `NEEDS_FIX`, `blocked_insufficient_evidence`, hoặc kết quả không pass tương đương:
+
+1. Coordinator chỉ đọc evaluator decision summary.
+2. Coordinator tạo bounded Generator rework packet từ `.harness/templates/generator-rework-packet.template.md`.
+3. Coordinator spawn Generator từ `.harness/subagents/generator.md`.
+4. Generator sửa implementation và cập nhật `04-implementation-report.md`.
+5. Coordinator spawn Evaluator từ `.harness/subagents/evaluator.md` lại.
+
+Coordinator không được đọc source để tự repair, không được edit source/tests/config, không được thêm test trực tiếp, không được chạy fix loop, và không được viết role artifact thay Generator.
+
+Nếu không spawn được Generator, stop với:
+
+```text
+BLOCKED_REQUIRED_GENERATOR_UNAVAILABLE
+```
 
 ## Evaluator Phase
 
@@ -110,7 +138,7 @@ Inputs:
 - planner brief;
 - approved contract;
 - contract review;
-- generator worklog;
+- implementation report;
 - git diff;
 - verification commands and outputs;
 - runtime/UI/API evidence when relevant.
@@ -126,17 +154,25 @@ Outputs:
 
 - `05-evaluator-report.md`;
 - final pass/fail decision;
-- `07-final-summary.md` after verified completion.
+- `06-final-summary.md` after verified completion.
 
-Evaluator Agent phải là runtime session khác với Generator Agent trong production mode. Evaluation phải dựa trên visible artifacts, diff, command output, runtime evidence, browser/API evidence, logs, và acceptance criteria.
-Evaluator Agent phải dừng sau `05-evaluator-report.md` và `07-final-summary.md` nếu final summary được giao cho Evaluator.
+Evaluator must be a spawned subagent from `.harness/subagents/evaluator.md` and must be separate from Generator. Evaluation phải dựa trên visible artifacts, diff, command output, runtime evidence, browser/API evidence, logs, và acceptance criteria.
+Evaluator Agent phải dừng sau `05-evaluator-report.md` và `06-final-summary.md` nếu final summary được giao cho Evaluator.
 
-## Handoff Note Format
+## Next Role Note
 
-Mỗi role phải kết thúc bằng:
+Each role artifact may include a short Next role note for traceability.
+
+This note is not the same as `HANDOFF.md`.
+
+Do not create `HANDOFF.md`.
+
+The note must not replace subagent spawning.
+
+Mỗi role có thể kết thúc bằng:
 
 ```md
-## Handoff
+## Next Role
 
 - Completed role:
 - Artifacts produced:
@@ -146,7 +182,7 @@ Mỗi role phải kết thúc bằng:
 - Notes for next role:
 ```
 
-Nếu không có independent session cho role tiếp theo trong production implementation, current agent phải dừng ở boundary và ghi `BLOCKED_FOR_INDEPENDENT_ROLE_HANDOFF`.
+Nếu không có subagent runtime cho role tiếp theo, current agent phải block run, update `run-manifest.md`, ghi `BLOCKED_FOR_EXECUTOR_UNAVAILABLE`, và dừng.
 
 ## Kỷ luật phạm vi
 

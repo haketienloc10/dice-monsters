@@ -4,10 +4,14 @@
 
 ```yaml
 role: ContractReviewer
-runtime_mode: production_multi_session
+runtime_mode: template_subagents_required
+executor_type: subagent
+executor_id: <required>
+agent_runtime: <required>
+agent_session_id: <required>
+role_template: .harness/subagents/contract-reviewer.md
 independence: independent
-reviewer_session_id: <required>
-epic_planner_session_id: <required>
+epic_planner_executor_id: <required>
 ```
 
 ## Epic ID
@@ -16,9 +20,9 @@ epic_planner_session_id: <required>
 
 ## Independence Check
 
-- Reviewer is separate from Epic planner/coordinator: yes | no
-- If no, is fallback explicitly allowed for this task: yes | no
-- Decision if not independent and fallback not allowed: REJECTED
+- Reviewer executor is separate from Epic planner/coordinator executor: yes | no
+- Reviewer was spawned from `.harness/subagents/contract-reviewer.md`: yes | no
+- Decision if not independent or not template-based: REJECTED
 
 ## Decision
 

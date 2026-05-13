@@ -2,172 +2,196 @@
 
 ## Purpose
 
-Harness dùng các runtime role tách biệt để giảm self-approval, context contamination, và implementation bias.
+Harness uses strict template-based subagent orchestration to prevent self-approval, context contamination, and implementation bias.
 
-## Production Mode
+The top-level agent is the coordinator/orchestrator. The coordinator routes lifecycle state, but must not execute Planner, Contract Reviewer, Generator, or Evaluator work.
 
-Production mode yêu cầu các agent/session riêng cho:
-
-- Planner Agent
-- Contract Reviewer Agent
-- Generator Agent
-- Evaluator Agent
-
-Một role không được approve output của chính nó. Contract Reviewer không được là cùng runtime session đã authored contract. Evaluator không được là cùng runtime session đã generated implementation.
-
-Production implementation tasks must use:
-
-```yaml
-runtime_mode: production_multi_session
-independence: independent
-```
-
-Một runtime session không được đóng nhiều production roles trong cùng một run.
-
-Lifecycle chuẩn:
+## Required Lifecycle
 
 ```txt
-User Request
-  -> Planner Agent
-  -> Contract Reviewer Agent
-  -> Generator Agent
-  -> Evaluator Agent
-  -> Final Summary
+Planner -> Contract Reviewer -> Generator -> Evaluator
 ```
 
-## Role Matrix
+Each core lifecycle role must be a separate spawned subagent instantiated from its fixed template:
 
-| Role | May create | May read | Must not do |
-|---|---|---|---|
-| Planner Agent | `00-input.md`, `01-planner-brief.md`, `02-implementation-contract.md` | user request, project context, relevant guides, relevant source/tests for planning | implement application code, approve contract, approve final evaluation |
-| Contract Reviewer Agent | `03-evaluator-contract-review.md` | `00-input.md`, `01-planner-brief.md`, `02-implementation-contract.md`, project rules/verification notes | implement, rewrite contract silently, approve vague or untestable contracts |
-| Generator Agent | code changes, `04-generator-worklog.md`, `06-fix-report.md` | approved contract, contract review, relevant source/tests | approve own work, broaden scope, weaken verification criteria |
-| Evaluator Agent | `05-evaluator-report.md`, maybe `07-final-summary.md` | all visible artifacts, git diff, command output, runtime/browser/API evidence, logs | implement, approve without evidence, rely on Generator statements without verification |
+- Planner: `.harness/subagents/planner.md`
+- Contract Reviewer: `.harness/subagents/contract-reviewer.md`
+- Generator: `.harness/subagents/generator.md`
+- Evaluator: `.harness/subagents/evaluator.md`
 
-## Context Isolation
+The coordinator may pass task-specific inputs to the selected template, including original request, project context, relevant files, previous artifacts, acceptance criteria, verification commands, and constraints.
 
-Each role should run in a fresh session where possible.
+The coordinator must not create free-form prompts for these roles, modify role responsibilities, weaken evidence requirements, bypass role separation, or write role artifacts on behalf of subagents.
 
-Evaluator must not use Planner/Generator hidden reasoning or memory. Evaluator must cite visible evidence from artifacts, diffs, command output, runtime checks, browser/API evidence, screenshots descriptions, or logs.
+## Coordinator Non-Execution Policy
 
-Contract Reviewer must review only visible inputs and must reject contracts that require hidden Planner assumptions to understand.
+The coordinator is an orchestration role only.
 
-## Allowed Inputs By Phase
+The coordinator MUST NOT perform implementation, review, verification, debugging, or repair work directly.
 
-Planner Agent may use:
+Forbidden coordinator actions:
 
-- user request;
-- `.harness/project/*` adapter files;
-- relevant guides;
-- source/test inspection needed for planning.
+- editing application source files;
+- editing tests;
+- editing production configuration;
+- applying patches;
+- writing production code;
+- fixing implementation bugs directly;
+- running exploratory source-code modification loops;
+- reading implementation files for the purpose of direct repair;
+- acting as Planner, Contract Reviewer, Generator, or Evaluator;
+- approving its own work;
+- producing implementation or evaluation evidence without the corresponding role artifact.
 
-Contract Reviewer Agent may use:
+Allowed coordinator actions:
 
-- `00-input.md`;
-- `01-planner-brief.md`;
-- `02-implementation-contract.md`;
-- project rules and verification notes if needed.
+- classify the request;
+- create or update run/epic structure;
+- build bounded role packets;
+- spawn the required template-based subagent;
+- wait for role completion;
+- inspect role status, decision summaries, and required role artifacts;
+- update Harness orchestration status;
+- route rejected or failed artifacts back to the correct role;
+- stop the workflow when required role execution is unavailable;
+- summarize final result from approved artifacts only.
 
-Generator Agent may use:
+## Coordinator Source Edit Ban
 
-- approved `02-implementation-contract.md`;
-- `03-evaluator-contract-review.md`;
-- relevant source code and tests.
+The coordinator MUST NOT modify application source, tests, runtime configuration, generated production artifacts, or project implementation files.
 
-Evaluator Agent may use:
+The coordinator may modify only Harness orchestration artifacts, such as:
 
-- original input;
-- planner brief;
-- approved contract;
-- contract review;
-- generator worklog;
-- git diff;
-- verification commands and outputs;
-- runtime/UI/API evidence when relevant.
+- run status files;
+- routing notes;
+- rework packets;
+- role packets;
+- final orchestration summaries;
+- Harness metadata files.
+
+Any implementation change MUST be performed by the Generator role.
+
+If a source/test/config change is required, the coordinator MUST spawn the Generator role.
+
+If the runtime cannot spawn the Generator role, stop with:
+
+```text
+BLOCKED_REQUIRED_GENERATOR_UNAVAILABLE
+```
+
+## Runtime Requirement
+
+Core lifecycle execution requires real subagent spawning.
+
+If the runtime cannot spawn subagents, the coordinator must block the run before Planner execution.
+
+Required blocked message:
+
+```text
+Subagent runtime unavailable.
+Harness lifecycle requires template-based subagent orchestration.
+This run is blocked.
+No lifecycle role may be executed in this session.
+```
+
+There is no degraded single-session fallback.
+
+If a required role template is missing, invalid, or unavailable, stop with:
+
+```text
+BLOCKED_REQUIRED_SUBAGENT_TEMPLATE_UNAVAILABLE
+```
+
+If the runtime cannot spawn required subagents, stop with:
+
+```text
+BLOCKED_REQUIRED_SUBAGENT_UNAVAILABLE
+```
 
 ## Required Metadata
 
 New run artifacts must include runtime metadata near the top:
 
 ```yaml
-runtime_mode: production_multi_session | fallback_single_session
-independence: independent | degraded
+runtime_mode: template_subagents_required
+executor_type: subagent
+executor_id: <required>
+agent_runtime: <required>
+agent_session_id: <required>
+template_source: .harness/subagents/<role>.md
+started_at: <required>
+completed_at: <required>
+independence: independent
 role: Planner | ContractReviewer | Generator | Evaluator | Coordinator
-session_id: <manual label or runtime id>
 ```
 
-Existing old runs may not have runtime metadata. New runs should include it. Old runs should not be rewritten unless explicitly requested.
+New role artifacts must use `template_source` for validator checks. `role_template` may exist only as legacy context.
 
-## Fallback Mode
+Existing old runs may not have this metadata. New runs should include it. Old runs should not be rewritten unless explicitly requested.
 
-Fallback single-session mode is not production-grade.
+## Role Independence Audit
 
-It is allowed only for:
+A Harness run is invalid if any of the following is true:
 
-- local experimentation;
-- low-risk documentation-only tasks;
-- learning/demo workflows;
-- tasks explicitly marked by the user as fallback-allowed.
+- Planner, Contract Reviewer, Generator, and Evaluator were performed by the same session.
+- The coordinator wrote lifecycle artifacts on behalf of role subagents.
+- A core role was executed from a free-form prompt instead of a role template.
+- The run continued after detecting unavailable subagent runtime.
+- Evaluator approved without independent evidence.
+- The coordinator modified source, tests, production config, or implementation artifacts.
+- The coordinator repaired rejected work directly instead of routing to the responsible role.
 
-Fallback mode is forbidden for:
+## Artifact-Only Role Inputs
 
-- multi-phase tasks;
-- Epic tasks;
-- child runs inside Epic;
-- implementation tasks affecting application behaviour;
-- UI/API behaviour implementation;
-- production-grade workflow;
-- tasks requiring independent contract review or independent evaluation;
-- tasks where the user explicitly requires independent roles.
+Roles communicate through written artifacts, not inherited raw conversation history.
 
-Environment limitations are not a production fallback permission. If independent role sessions are unavailable for real implementation work, the current agent must stop after its assigned role and produce a handoff prompt for the next independent session.
+A downstream role may read only the approved upstream artifact and the explicitly allowed input artifacts.
 
-Fallback artifacts must include:
+Forbidden transcript transfer:
 
-```yaml
-runtime_mode: fallback_single_session
-independence: degraded
-reason: "<why fallback is allowed for this task>"
+- passing full Planner transcript to Contract Reviewer;
+- passing full Reviewer transcript to Generator;
+- passing full Generator transcript to Evaluator;
+- passing unrelated previous run artifacts by default;
+- coordinator summarizing raw implementation details from memory instead of using artifacts.
+
+Allowed artifact input chain:
+
+- Planner -> planner brief and contract;
+- Contract Reviewer -> contract review decision;
+- Generator -> implementation report, changed files summary, verification commands/results;
+- Evaluator -> evaluator report and pass/fail decision.
+
+## Coordinator Context Budget Guard
+
+Coordinator calls SHOULD remain small after role delegation.
+
+Expected coordinator input budget:
+
+- normal orchestration step: <= 20,000 input tokens;
+- routing/rework step: <= 30,000 input tokens;
+- exceptional recovery step: <= 40,000 input tokens.
+
+If a coordinator step exceeds 80,000 input tokens after a subagent has completed, treat this as a context packaging bug.
+
+The coordinator must stop and emit:
+
+```text
+BLOCKED_COORDINATOR_CONTEXT_OVER_BUDGET
 ```
 
-Fallback mode is not production-grade. A fallback Evaluator must still use visible artifacts, commands, diffs, logs, runtime checks, browser/API evidence, and acceptance criteria instead of hidden reasoning.
+Required recovery:
 
-## Blocking Rule
+- do not continue implementation in coordinator context;
+- compact current state into a bounded role packet;
+- spawn the next required role.
 
-If a task requires production multi-session and the environment cannot spawn separate sessions, mark the run blocked for handoff:
+## Role Matrix
 
-```md
-## Role Separation Status
-
-- Production multi-session required: yes
-- Current session role: <role>
-- Next required role: <role>
-- Same-session fallback allowed: no
-- Status: BLOCKED_FOR_INDEPENDENT_ROLE_HANDOFF
-- Reason: This task requires independent runtime roles.
-```
-
-## Handoff Protocol
-
-Each phase must end with a clear handoff note:
-
-```md
-## Handoff
-
-- Completed role:
-- Artifacts produced:
-- Next required role:
-- Allowed next actions:
-- Blocked actions:
-- Notes for next role:
-```
-
-Contract Review decision:
-
-- `APPROVED`: Generator may start.
-- `REJECTED`: Planner must revise the contract before implementation.
-
-Evaluator decision:
-
-- `PASS`: final summary may be produced from approved evidence.
-- `FAIL` / `Blocked`: Generator or Coordinator must fix within contract or return to Planner if scope/contract is invalid.
+| Role | May create | May read | Must not do |
+|---|---|---|---|
+| Planner | `01-planner-brief.md`, `02-implementation-contract.md` | user request, project context, relevant guides, relevant source/tests for planning | implement application code, approve contract, approve final evaluation |
+| Contract Reviewer | `03-contract-review.md` | `00-input.md`, `01-planner-brief.md`, `02-implementation-contract.md`, project rules/verification notes | implement, rewrite contract silently, approve vague or untestable contracts |
+| Generator | code changes, `04-implementation-report.md` | approved contract, contract review, relevant source/tests | approve own work, broaden scope, weaken verification criteria |
+| Evaluator | `05-evaluator-report.md`, maybe `06-final-summary.md` | all visible artifacts, git diff, command output, runtime/browser/API evidence, logs | implement, approve without evidence, rely on Generator statements without verification |
+| Coordinator | orchestration status, routing notes, role/rework packets, final summary from approved artifacts | run state, manifests, role status, decision summaries, approved artifacts | source edits, test edits, production config edits, debugging, implementation repair, role artifact authorship |

@@ -1,6 +1,6 @@
 # Harness Installation
 
-Installed at: 2026-05-12T19:50:01+07:00
+Installed at: 2026-05-13T20:49:58+07:00
 
 This target repository owns its installed `.harness/` tree.
 
@@ -13,6 +13,8 @@ This target repository owns its installed `.harness/` tree.
 - `.harness/backlog/HARNESS_BACKLOG.md` belongs to this target repository. The installer does not overwrite it if it already exists.
 - Kernel folders may be replaced during an explicit update:
   - `.harness/guides/`
+  - `.harness/subagents/`
+  - `.harness/workflows/`
   - `.harness/templates/`
   - `.harness/project-templates/`
   - `.harness/scripts/`

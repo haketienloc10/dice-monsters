@@ -4,9 +4,13 @@
 
 ```yaml
 role: Planner
-runtime_mode: production_multi_session
+runtime_mode: template_subagents_required
+executor_type: subagent
+executor_id: <required>
+agent_runtime: <required>
+agent_session_id: <required>
+role_template: .harness/subagents/planner.md
 independence: independent
-planner_session_id: <required>
 ```
 
 ## Task Classification

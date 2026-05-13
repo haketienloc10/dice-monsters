@@ -1,14 +1,14 @@
-# Generator Worklog
+---
+artifact: 04-implementation-report
+run_id: <RUN-ID>
+role: generator
+executor_type:
+executor_id:
+template_source: .harness/subagents/generator.md
+status: draft
+---
 
-## Runtime Metadata
-
-```yaml
-role: Generator
-runtime_mode: production_multi_session
-independence: independent
-generator_session_id: <required>
-contract_reviewer_session_id: <required>
-```
+# Implementation Report
 
 ## Start State
 
@@ -20,22 +20,24 @@ contract_reviewer_session_id: <required>
 
 ## Implementation Steps
 
-### Step 1
-
 - Files changed:
 - Reason:
 - Notes:
 
-### Step 2
+## Changed Files
 
-- Files changed:
-- Reason:
-- Notes:
+| File | Change | Reason |
+|---|---|---|
+|  |  |  |
 
 ## Commands Run During Implementation
 
 ```bash
-...
+```
+
+## Command Output
+
+```text
 ```
 
 ## Issues Encountered
@@ -48,16 +50,9 @@ contract_reviewer_session_id: <required>
 |---|---|---|
 |  |  |  |
 
-## Conflict / Parallel Notes
-
-- Active conflicts:
-- Resolved by:
-- Remaining risk:
-
 ## Self-Check Before Evaluator
 
 - [ ] Code compiles
 - [ ] Relevant tests pass locally
 - [ ] No obvious unrelated changes
 - [ ] Contract behaviours implemented
-- [ ] No unapproved file conflicts introduced

@@ -8,6 +8,14 @@ Load only the selected skill file.
 
 Do not load all skill files by default.
 
+## Mandatory Order
+
+For non-trivial work, select skills in this order:
+
+```txt
+run-classification -> project-sync/codebase-sync if needed -> epic-workflow if large -> lifecycle-orchestration
+```
+
 ## run-classification
 
 Description:
@@ -91,23 +99,42 @@ Outputs:
 ## lifecycle-orchestration
 
 Description:
-Use the Lifecycle Orchestration and Subagent Execution guides before non-trivial implementation to enforce run states, gates, role executors, independent review/evaluation, and handoff fallback.
+Use the Lifecycle Orchestration and Subagent Execution guides before non-trivial implementation to enforce run states, gates, template-based subagent spawning, independent review/evaluation, and manifest audit.
+
+For non-trivial implementation work, `lifecycle-orchestration` is mandatory.
+
+Harness role transitions are executed through spawned subagents from fixed templates.
+
+The Orchestrator is orchestration-only. It must not implement, debug, repair, review, verify, approve, edit source/tests/config, or write role artifacts directly.
+
+Load:
+- `.harness/guides/LIFECYCLE_ORCHESTRATION.md`
+- `.harness/guides/SUBAGENT_EXECUTION.md`
+- `.harness/workflows/default-lifecycle.md`
+
+The Orchestrator must spawn the next required subagent:
+
+- `planner`
+- `contract-reviewer`
+- `generator`
+- `evaluator`
+
+Do not create `HANDOFF.md` for normal lifecycle transitions.
+
+If no subagent runtime can be started, block the run. There is no single-session fallback.
+
+When Evaluator returns a non-passing result, route through a bounded Generator rework packet and spawn Generator again. If Generator cannot be spawned, stop with `BLOCKED_REQUIRED_GENERATOR_UNAVAILABLE`.
 
 Use when:
 - Starting any non-trivial implementation run.
 - Reviewing or approving an implementation contract.
-- Handing work from planning to implementation or from implementation to evaluation.
+- Dispatching work from planning to implementation or from implementation to evaluation.
 - A task might otherwise be handled by one agent/session playing multiple roles.
-- Independent sessions are unavailable and a role-boundary handoff is required.
-
-Load:
-`.harness/guides/LIFECYCLE_ORCHESTRATION.md`
-
-If Codex subagents are available, also load:
-`.harness/guides/SUBAGENT_EXECUTION.md`
+- Subagent spawning is unavailable and the run must block.
 
 Outputs:
 - Correct `run.yaml` lifecycle state
+- Correct `run-manifest.md` execution mode and role status
 - Required role artifact for the current state
-- `HANDOFF.md` when the next independent executor cannot run
-- `BLOCKED_FOR_INDEPENDENT_ROLE_HANDOFF` when production work cannot continue in the same session
+- `BLOCKED_FOR_EXECUTOR_UNAVAILABLE` when subagent spawning is unavailable
+- `BLOCKED_REQUIRED_GENERATOR_UNAVAILABLE` when implementation or rework requires Generator but Generator cannot be spawned

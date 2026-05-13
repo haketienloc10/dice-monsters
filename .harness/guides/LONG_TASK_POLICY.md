@@ -11,7 +11,7 @@ Harness dùng một execution namespace:
 - `Run`: đơn vị thực thi nhỏ, có contract và verification riêng.
 - `Epic`: run container để điều phối task dài hơi, giữ mục tiêu tổng, roadmap, decision log, acceptance matrix, và index của các child runs.
 
-Epic không phải implementation run và không phải metadata folder độc lập. Chỉ child runs trong `EPIC-.../runs/` mới chứa implementation contract, generator worklog, evaluator report, fix report, và final summary.
+Epic không phải implementation run và không phải metadata folder độc lập. Chỉ child runs trong `EPIC-.../runs/` mới chứa implementation contract, contract review, implementation report, evaluator report, và final summary.
 
 ## Layout
 
@@ -38,7 +38,7 @@ Epic container:
 
 ## Khi Nào Tạo Epic
 
-Epic là bắt buộc khi task có bất kỳ tín hiệu long-task hoặc multi-phase nào. Một task tên hoặc request có dạng `phase 1-4`, `part 1-4`, `core loop`, `complete playable`, `full feature`, `end-to-end`, `MVP`, `large task`, hoặc `long task` không được tạo thành một normal run.
+Epic là bắt buộc khi task có bất kỳ tín hiệu long-task hoặc multi-phase nào. Một task tên hoặc request có dạng `phase 1-4`, `part 1-4`, `core loop`, `complete playable`, `full feature`, `end-to-end`, `MVP`, `large task`, `long task`, `toan-bo`, `hoan-thien`, `day-du`, `nhieu-phan-he`, `nhieu-luong`, hoặc `tu-dau-toi-cuoi` không được tạo thành một normal run.
 
 Tạo Epic khi task thật sự cần nhiều run độc lập, ví dụ:
 
@@ -84,20 +84,20 @@ bash .harness/scripts/new-run.sh --within EPIC-YYYYMMDD-NNN-task-slug "child tas
 
 `--epic` có thể tồn tại như alias tương thích, nhưng docs và workflow mới phải dùng `--within`.
 
-Mỗi child run vẫn giữ lifecycle multi-agent bình thường:
+Mỗi child run vẫn giữ lifecycle template-based subagent orchestration:
 
 ```txt
-Planner Agent -> Contract Reviewer Agent -> Generator Agent -> Evaluator Agent -> Final Summary
+Planner -> Contract Reviewer -> Generator -> Evaluator -> Final Summary
 ```
 
 Acceptance criteria cấp Epic được track trong `02-acceptance-matrix.md`; evidence phải trỏ tới child runs.
 
 Với mỗi child run:
 
-- Contract Reviewer Agent phải độc lập với Planner Agent của child run đó trong production mode.
-- Evaluator Agent phải độc lập với Generator Agent của child run đó trong production mode.
+- Contract Reviewer subagent phải độc lập với Planner subagent của child run đó.
+- Evaluator subagent phải độc lập với Generator subagent của child run đó.
 - Epic coordinator không được thay thế Evaluator approval của child run.
-- Fallback single-session bị cấm cho child runs trong production workflow.
+- Không có single-session fallback cho child runs.
 
 ## Quy Tắc Không Tạo Run Khổng Lồ
 
@@ -107,7 +107,7 @@ Không tạo run có contract quá rộng, ví dụ:
 - nhiều UI flow không thể smoke test cùng lúc;
 - nhiều module có dependency chưa rõ;
 - verification phải chờ toàn bộ project hoàn tất;
-- worklog/final summary dự kiến quá dài để resume an toàn.
+- implementation report/final summary dự kiến quá dài để resume an toàn.
 
 Nếu contract bắt đầu phình to, dừng lại và chuyển task sang Epic chỉ khi xác định được ít nhất hai child runs. Nếu chưa xác định được, đóng phạm vi run hiện tại và ghi follow-up.
 

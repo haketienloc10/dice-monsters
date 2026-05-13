@@ -1,27 +1,30 @@
+---
+artifact: 05-evaluator-report
+run_id: <RUN-ID>
+role: evaluator
+executor_type:
+executor_id:
+template_source: .harness/subagents/evaluator.md
+status: draft
+generator_executor_id:
+evaluator_executor_id:
+same_executor_as_generator: false
+---
+
 # Evaluator Report
-
-## Runtime Metadata
-
-```yaml
-role: Evaluator
-runtime_mode: production_multi_session
-independence: independent
-evaluator_session_id: <required>
-generator_session_id: <required>
-```
 
 ## Independence Check
 
-- Evaluator is separate from Generator: yes | no
-- If no, is fallback explicitly allowed for this task: yes | no
-- Decision if not independent and fallback not allowed: FAIL
+- Evaluator executor is separate from Generator executor: yes | no
+- Evaluator was spawned from `.harness/subagents/evaluator.md`: yes | no
+- Decision if not independent or not template-based: fail
 
-## Evaluation Decision
+## Coordinator-Readable Decision Summary
 
-- [ ] Pass
-- [ ] Fail
-- [ ] Pass with Notes
-- [ ] Blocked
+- Status: pass | fail | blocked_insufficient_evidence
+- Failed acceptance criteria:
+- Required responsible role: planner | generator | evaluator
+- Required recheck:
 
 ## What Was Evaluated
 
@@ -30,71 +33,24 @@ generator_session_id: <required>
 - Code diff:
 - Runtime behaviour:
 - Tests:
-- Conflict status:
 
 ## Commands Executed
 
 ```bash
-<command>
 ```
-
-### Result
-
-```text
-<paste output summary>
-```
-
-## Runtime / App Checks
-
-| Check | Method | Result | Evidence |
-|---|---|---|---|
-|  | CLI/API/Browser | Pass/Fail |  |
-
-## Behaviour-Level Evidence
-
-Evaluator phải điền một dòng cho từng required behaviour trong implementation contract. Với UI task, không được `Pass` nếu chỉ có build success hoặc curl smoke mà thiếu evidence cho các behaviour bắt buộc.
-
-| Behaviour | Kỳ vọng | Phương pháp kiểm chứng | Evidence | Kết quả |
-|---|---|---|---|---|
-|  |  | Browser/E2E/Manual/API/Other |  | Pass/Fail |
-
-## Behaviour Verification Summary
-
-| Behaviour | Expected | Actual | Result |
-|---|---|---|---|
-|  |  |  | Pass/Fail |
-
-## Conflict Verification
-
-| Check | Result | Evidence |
-|---|---|---|
-| Modified files match contract | Pass/Fail |  |
-| No overlap with active run | Pass/Fail |  |
-| Branch/worktree isolation respected | Pass/Fail/NA |  |
-
-## Bugs / Issues
-
-| Severity | Issue | Evidence | Suggested Fix |
-|---|---|---|---|
-| High/Medium/Low |  |  |  |
-
-## Missing Tests
-
-- ...
 
 ## Evidence
 
 Include exact commands, outputs, logs, screenshots descriptions, browser/API evidence, or runtime observations.
 
 ```text
-...
 ```
 
 ## Decision
 
-- Status: PASS | FAIL
+- Status: pass | fail | blocked_insufficient_evidence
 - Reason:
 
 ## Notes for Generator
 
-<Chỉ ghi yêu cầu fix, không sửa code>
+<Chi ghi yeu cau fix, khong sua code>
