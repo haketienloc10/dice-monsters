@@ -3,6 +3,7 @@
 | Type | Parent | ID | Task | Status | Branch | Worktree | Owner | Started At | Last Updated |
 |---|---|---|---|---|---|---|---|---|---|
 | run |  | RUN-20260514-001-implement-power-charge-magic-crest | implement-power-charge-magic-crest | CREATED |  |  | agent | 2026-05-14T00:46:25+07:00 | 2026-05-14T00:46:25+07:00 |
+| run |  | RUN-20260514-002-fix-power-charge-core-damage-regression | fix-power-charge-core-damage-regression | CREATED |  |  | agent | 2026-05-14T09:56:32+07:00 | 2026-05-14T09:56:32+07:00 |
 
 ## Status Values
 

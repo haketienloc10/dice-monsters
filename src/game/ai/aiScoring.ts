@@ -1,7 +1,7 @@
 import { diceCatalog } from "../data/diceCatalog";
 import { monsters } from "../data/monsters";
 import { tileShapes } from "../data/tileShapes";
-import { calculateMonsterDamage, calculatePowerChargeMonsterDamage } from "../rules/combat";
+import { calculateCoreDamage, calculateMonsterDamage, calculatePowerChargeMonsterDamage } from "../rules/combat";
 import { getCorePosition, getNeighbors, getOpponent, manhattanDistance } from "../rules/board";
 import { getShapeCells } from "../rules/summon";
 import type { AttackTarget, BoardPosition, GameState, PlayerId } from "../types";
@@ -18,8 +18,7 @@ export function scoreAttackTarget(state: GameState, attackerId: string, target: 
   const attackerDefinition = monsters[attacker.definitionId];
 
   if (target.type === "core") {
-    if (attacker.powerChargeActive) return 0;
-    return 10000 + attackerDefinition.atk;
+    return 10000 + calculateCoreDamage(attackerDefinition.atk, Boolean(attacker.powerChargeActive));
   }
 
   const defender = state.monsters[target.monsterId];

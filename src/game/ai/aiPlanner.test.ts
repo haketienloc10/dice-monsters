@@ -204,6 +204,25 @@ describe("AI planner", () => {
     expect(getNextAIAction(noMagicState)).toEqual({ type: "ENTER_ATTACK_MODE" });
   });
 
+  it("attacks the core when Power Charge is already active", () => {
+    const state = makeP2ActionState();
+    state.players.P2.crestPool.attack = 1;
+    addMonster(state, {
+      instanceId: "p2-mage",
+      definitionId: "rune-mage",
+      owner: "P2",
+      x: 1,
+      y: 4,
+      hp: monsters["rune-mage"].hp,
+      hasActedAttack: false,
+      powerChargeActive: true
+    });
+    state.selectedMonsterId = "p2-mage";
+    state.interactionMode = "attacking";
+
+    expect(getNextAIAction(state)).toEqual({ type: "ATTACK_TARGET", target: { type: "core", playerId: "P1", x: 0, y: 4 } });
+  });
+
   it("does not include illegal movement through occupied cells", () => {
     const state = makeP2ActionState();
     state.players.P2.crestPool.move = 3;

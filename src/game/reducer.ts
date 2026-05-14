@@ -3,7 +3,7 @@ import { diceCatalog } from "./data/diceCatalog";
 import { monsters as monsterDefinitions } from "./data/monsters";
 import { createInitialState } from "./initialState";
 import { addLog, cloneGameState, getCell, getOpponent, positionKey, samePosition } from "./rules/board";
-import { calculateMonsterDamage, calculatePowerChargeMonsterDamage, getValidAttackTargets } from "./rules/combat";
+import { calculateCoreDamage, calculateMonsterDamage, calculatePowerChargeMonsterDamage, getValidAttackTargets } from "./rules/combat";
 import { addRolledCrests, getSummonCandidates, rollDicePool } from "./rules/dice";
 import { getMovementDistance, getReachableCells } from "./rules/movement";
 import { getShapeCells, getValidPlacementAnchors, isValidDungeonPlacement } from "./rules/summon";
@@ -300,7 +300,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           addLog(next, `${defenderDefinition.name} was destroyed.`);
         }
       } else {
-        const damage = wasPowerCharged ? 1 : attackerDefinition.atk;
+        const damage = calculateCoreDamage(attackerDefinition.atk, wasPowerCharged);
         next.players[action.target.playerId].coreHp = Math.max(0, next.players[action.target.playerId].coreHp - damage);
         next.lastEvent = {
           id: eventId("attacked"),
