@@ -205,22 +205,38 @@ describe("Power Charge", () => {
     expect(next.log[0]).toMatch(/Power Charge/);
   });
 
+  it("rejects current-player monsters without Power Charge without changing state", () => {
+    const state = { ...createInitialState(), phase: "action" as const };
+    state.players.P1.crestPool.magic = 1;
+    addMonster(state, {
+      instanceId: "p1-swordsman",
+      definitionId: "little-swordsman",
+      owner: "P1",
+      x: 1,
+      y: 4,
+      hp: monsters["little-swordsman"].hp,
+      hasActedAttack: false
+    });
+
+    expect(gameReducer(state, { type: "USE_POWER_CHARGE", monsterId: "p1-swordsman" })).toBe(state);
+  });
+
   it("rejects invalid Power Charge targets without changing state", () => {
     const state = { ...createInitialState(), phase: "action" as const };
     state.players.P1.crestPool.magic = 1;
     addMonster(state, {
-      instanceId: "p2-imp",
-      definitionId: "shadow-imp",
+      instanceId: "p2-mage",
+      definitionId: "rune-mage",
       owner: "P2",
       x: 11,
       y: 4,
-      hp: monsters["shadow-imp"].hp,
+      hp: monsters["rune-mage"].hp,
       hasActedAttack: false
     });
 
-    expect(gameReducer(state, { type: "USE_POWER_CHARGE", monsterId: "p2-imp" })).toBe(state);
+    expect(gameReducer(state, { type: "USE_POWER_CHARGE", monsterId: "p2-mage" })).toBe(state);
     const rollState = { ...state, phase: "roll" as const };
-    expect(gameReducer(rollState, { type: "USE_POWER_CHARGE", monsterId: "p2-imp" })).toBe(rollState);
+    expect(gameReducer(rollState, { type: "USE_POWER_CHARGE", monsterId: "p2-mage" })).toBe(rollState);
   });
 
   it("uses boosted monster damage once and clears the effect", () => {

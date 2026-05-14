@@ -225,9 +225,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "USE_POWER_CHARGE": {
       if (state.phase !== "action") return state;
       const monster = state.monsters[action.monsterId];
+      const definition = monster ? monsterDefinitions[monster.definitionId] : undefined;
       const cell = monster ? getCell(state.board, monster) : undefined;
       if (
         !monster ||
+        definition?.skillId !== "power-charge" ||
         monster.owner !== state.currentPlayer ||
         cell?.monsterId !== monster.instanceId ||
         monster.powerChargeActive ||

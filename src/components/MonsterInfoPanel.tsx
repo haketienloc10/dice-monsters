@@ -50,7 +50,7 @@ export function MonsterInfoPanel({ state }: Props) {
             <span>Move</span>
             <strong>{definition.move}</strong>
           </div>
-          {definition.skillName && (
+          {definition.skillId && definition.skillName && (
             <div className="skill-text">
               <strong>{definition.skillName}</strong>
               <span>{definition.skillText}</span>

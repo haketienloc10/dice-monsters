@@ -63,8 +63,9 @@ export const monsters: Record<string, MonsterDefinition> = {
     def: 0,
     range: 2,
     move: 2,
-    skillName: "Arc Mark",
-    skillText: "Can strike cores or foes from 2 cells away."
+    skillId: "power-charge",
+    skillName: "Power Charge",
+    skillText: "Spend 1 Magic to gain +1 ATK on this monster's next attack."
   },
   "wolf-scout": {
     id: "wolf-scout",

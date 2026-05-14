@@ -49,6 +49,8 @@ export type BoardPosition = {
   y: number;
 };
 
+export type MonsterSkillId = "power-charge";
+
 export type MonsterDefinition = {
   id: string;
   name: string;
@@ -59,6 +61,7 @@ export type MonsterDefinition = {
   def: number;
   range: number;
   move: number;
+  skillId?: MonsterSkillId;
   skillName?: string;
   skillText?: string;
 };

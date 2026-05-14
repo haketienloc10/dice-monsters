@@ -13,6 +13,7 @@ type Props = {
 
 export function ActionPanel({ state, dispatch, disabled = false, animationLocked = false }: Props) {
   const selectedMonster = state.selectedMonsterId ? state.monsters[state.selectedMonsterId] : undefined;
+  const selectedMonsterDefinition = selectedMonster ? monsters[selectedMonster.definitionId] : undefined;
   const canMove =
     state.phase === "action" &&
     selectedMonster?.owner === state.currentPlayer &&
@@ -25,6 +26,7 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
   const selectedMonsterCell = selectedMonster ? getCell(state.board, selectedMonster) : undefined;
   const canPowerCharge =
     state.phase === "action" &&
+    selectedMonsterDefinition?.skillId === "power-charge" &&
     selectedMonster?.owner === state.currentPlayer &&
     selectedMonsterCell?.monsterId === selectedMonster.instanceId &&
     !selectedMonster.powerChargeActive &&
@@ -77,9 +79,6 @@ export function ActionPanel({ state, dispatch, disabled = false, animationLocked
         </button>
         <button className="action-button action-button--guard" type="button" disabled>
           <ShieldCheck size={16} /> Guard
-        </button>
-        <button className="action-button action-button--skill" type="button" disabled>
-          <Sparkles size={16} /> Skill
         </button>
         <button className="action-button action-button--end" type="button" onClick={() => dispatch({ type: "END_TURN" })} disabled={disabled || (state.phase !== "action" && state.phase !== "summon")}>
           <Hourglass size={16} /> End Turn
