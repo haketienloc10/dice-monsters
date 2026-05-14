@@ -4,7 +4,7 @@ import { monsters } from "../data/monsters";
 import { createInitialState } from "../initialState";
 import type { GameState, MonsterInstance, PlayerId } from "../types";
 import { gameReducer } from "../reducer";
-import { calculateMonsterDamage, calculatePowerChargeMonsterDamage, getValidAttackTargets } from "./combat";
+import { calculateCoreDamage, calculateMonsterDamage, calculatePowerChargeMonsterDamage, getValidAttackTargets } from "./combat";
 import { getCell } from "./board";
 import { getSummonCandidates, rollDicePool } from "./dice";
 import { getMovementDistance, getReachableCells } from "./movement";
@@ -152,6 +152,11 @@ describe("combat rules", () => {
     expect(calculatePowerChargeMonsterDamage(2, 5)).toBe(0);
   });
 
+  it("calculates core damage from attack and Power Charge", () => {
+    expect(calculateCoreDamage(2)).toBe(2);
+    expect(calculateCoreDamage(2, true)).toBe(3);
+  });
+
   it("targets the opponent core only through attack range", () => {
     const state = createInitialState();
     addMonster(state, {
@@ -254,19 +259,31 @@ describe("Power Charge", () => {
     expect(next.log.some((entry) => entry.includes("Power Charge was consumed"))).toBe(true);
   });
 
-  it("does exactly 1 core damage when consumed against a core", () => {
-    const state = { ...createInitialState(), phase: "action" as const };
-    state.players.P1.crestPool.attack = 1;
-    addMonster(state, {
+  it("uses boosted core damage once and clears the effect", () => {
+    const initialCoreHp = createInitialState().players.P2.coreHp;
+    const attacker = {
       instanceId: "p1-mage",
       definitionId: "rune-mage",
       owner: "P1",
       x: 10,
       y: 4,
       hp: monsters["rune-mage"].hp,
-      hasActedAttack: false,
-      powerChargeActive: true
+      hasActedAttack: false
+    } satisfies MonsterInstance;
+    const normalState = { ...createInitialState(), phase: "action" as const };
+    normalState.players.P1.crestPool.attack = 1;
+    addMonster(normalState, { ...attacker });
+    normalState.selectedMonsterId = "p1-mage";
+    normalState.interactionMode = "attacking";
+
+    const normalNext = gameReducer(normalState, {
+      type: "ATTACK_TARGET",
+      target: { type: "core", playerId: "P2", x: 12, y: 4 }
     });
+
+    const state = { ...createInitialState(), phase: "action" as const };
+    state.players.P1.crestPool.attack = 1;
+    addMonster(state, { ...attacker, powerChargeActive: true });
     state.selectedMonsterId = "p1-mage";
     state.interactionMode = "attacking";
 
@@ -274,8 +291,14 @@ describe("Power Charge", () => {
       type: "ATTACK_TARGET",
       target: { type: "core", playerId: "P2", x: 12, y: 4 }
     });
+    const normalDamage = normalNext.lastEvent?.type === "attacked" ? normalNext.lastEvent.damage : 0;
+    const chargedDamage = next.lastEvent?.type === "attacked" ? next.lastEvent.damage : 0;
 
-    expect(next.players.P2.coreHp).toBe(createInitialState().players.P2.coreHp - 1);
+    expect(normalDamage).toBe(monsters["rune-mage"].atk);
+    expect(chargedDamage).toBe(monsters["rune-mage"].atk + 1);
+    expect(chargedDamage).toBeGreaterThanOrEqual(normalDamage);
+    expect(next.players.P2.coreHp).toBe(initialCoreHp - chargedDamage);
+    expect(next.lastEvent?.type === "attacked" ? next.lastEvent.coreOwnerHit : undefined).toBe("P2");
     expect(next.monsters["p1-mage"].powerChargeActive).toBeUndefined();
   });
 });

@@ -1,0 +1,11 @@
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/baseline-files.txt
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/00-input.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/01-planner-brief.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/02-implementation-contract.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/03-contract-review.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/04-implementation-report.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/05-evaluator-report.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/06-final-summary.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/run-manifest.md
+.harness/runs/RUN-20260514-002-fix-power-charge-core-damage-regression/run.yaml
+.harness/runs/RUN_INDEX.md
