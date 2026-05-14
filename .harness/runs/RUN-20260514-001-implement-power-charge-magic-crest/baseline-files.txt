@@ -1,1 +1,0 @@
-.harness/runs/RUN-20260514-001-implement-power-charge-magic-crest/baseline-files.txt

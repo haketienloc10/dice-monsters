@@ -1,196 +1,259 @@
 # AGENTS.md
 
-Repository này đã cài **Harness** để điều phối AI-assisted development bằng artifacts, lifecycle state, Codex project-scoped agents, và workflow skills.
+Repository này đã cài **Harness** để điều phối AI-assisted development bằng artifacts, lifecycle state.
 
-File này là bootstrap instruction của target repository. Chỉ load tài liệu liên quan đến task hiện tại.
+## Language Rule
 
-## Bootstrap Rules
+Reply theo ngôn ngữ người dùng; giữ code, command, path, API name, logs, schema keys, package names, và identifiers ở dạng gốc.
 
-- Reply theo ngôn ngữ người dùng; giữ code, command, path, API name, logs, schema keys, package names, và identifiers ở dạng gốc.
-- Trước non-trivial work, chọn skill liên quan trong `.codex/skills/harness-*/SKILL.md`; không load toàn bộ skills/guides/codebase cache theo mặc định.
-- Dùng `run.yaml` làm authoritative lifecycle state.
-- Không sửa application code trước khi Contract Reviewer approve contract và `run.yaml` cho phép Generator.
-- Evaluator phải độc lập với Generator và phải có evidence thật.
-- Không kết thúc bằng generic next steps nếu bước tiếp theo có thể biểu diễn bằng Harness lifecycle routing.
+## Mô hình cốt lõi
 
-## Repository Boundary
+Harness work được chia thành:
 
-`.harness/` là workflow infrastructure của target repository. Nó không phải application source tree.
+- Coordinator: điều phối lifecycle của run và dispatch công việc.
+- Subagent: thực hiện công việc theo role từ dispatch file.
+- Project state: ghi nhận task/run đang active ở cấp project.
+- Run state: ghi nhận trạng thái lifecycle của một run.
+- Dispatch file: định nghĩa role được đọc gì, được sửa gì, và khi nào hoàn thành.
 
-Lifecycle role definitions canonical nằm trong `.codex/agents/*.toml`. Workflow skills canonical nằm trong `.codex/skills/harness-*/SKILL.md`.
-
-## Context Loading
-
-Trước implementation work không tầm thường:
-
-1. Chọn skill liên quan trong `.codex/skills/harness-*/SKILL.md`.
-2. Nếu cần project-level context, đọc các file liên quan trong `.harness/project/*`.
-3. Nếu cần source-navigation hoặc impact context, đọc `.harness/codebase/CODEBASE_INDEX.md` và chỉ các docs liên quan.
-4. Nếu project/codebase context thiếu, stale, contradictory, hoặc low-confidence, dùng `harness-project-sync` hoặc `harness-codebase-sync`.
-
-## Harness Lifecycle
-
-Trước khi tạo run, classify request:
+Vị trí chuẩn:
 
 ```txt
-User request
-  -> Normal Run nếu bounded và verify được trong một run
-  -> Epic nếu broad, multi-phase, multi-module, long-running, hoặc không verify sạch trong một run
+.codex/agents/*.toml
+.harness/project/state.yaml
+.harness/project/state.template.yaml
+.harness/runs/{RUN_ID}/run.yaml
+.harness/runs/{RUN_ID}/dispatch/*.dispatch.md
 ```
 
-Canonical run artifacts:
+## Project State
+
+Trạng thái hiện tại của project nằm tại:
 
 ```txt
-run.yaml
-run-manifest.md
-00-input.md
-01-planner-brief.md
-02-implementation-contract.md
-03-contract-review.md
-04-implementation-report.md
-05-evaluator-report.md
-06-final-summary.md
+.harness/project/state.yaml
 ```
 
-Normal runs live under `.harness/runs/RUN-YYYYMMDD-NNN-task-slug/`. Epic containers live under `.harness/runs/EPIC-YYYYMMDD-NNN-task-slug/`. Child runs live under `.harness/runs/EPIC-YYYYMMDD-NNN-task-slug/runs/RUN-NNN-child-task-slug/`.
+Agent phải đọc project state trước khi bắt đầu hoặc tiếp tục Harness work.
 
-Detailed classification and Epic rules live in:
+Luôn dùng project state trước. Không scan toàn bộ run directories để tự suy đoán task đang active.
+
+Project state chỉ nên chứa active run pointer, current status, current phase, next role, locks, và blocked runs.
+
+Coordinator sở hữu quyền cập nhật project state.
+
+Subagent có thể đọc project state để validation, nhưng không được cập nhật project state trừ khi dispatch cho phép rõ ràng trong write scope.
+
+## Run Layout
+
+Run directory chuẩn:
 
 ```txt
-.codex/skills/harness-run-classification/SKILL.md
-.codex/skills/harness-epic/SKILL.md
+.harness/runs/{RUN_ID}/
+  run.yaml
+  00-request-snapshot.md
+  00-request-brief.md
+  01-planner-brief.md
+  02-implementation-contract.md
+  03-contract-review.md
+  04-implementation-report.md
+  05-evaluator-report.md
+  dispatch/
+    harness-planner.dispatch.md
+    harness-contract-reviewer.dispatch.md
+    harness-generator.dispatch.md
+    harness-evaluator.dispatch.md
 ```
 
-## Codex Project-Scoped Agents
-
-Harness core lifecycle roles MUST be executed by separate spawned Codex project-scoped agents:
+Template tham khảo nằm tại:
 
 ```txt
-harness_planner
-harness_contract_reviewer
-harness_generator
-harness_evaluator
+.harness/project/state.template.yaml
+.harness/runs/template/run.yaml
+.harness/runs/template/dispatch/role.dispatch.template.md
 ```
 
-Required agent files:
+Files under `.harness/**/template/` are examples only and must not be treated as active project artifacts.
+
+## Quy tắc Coordinator
+
+Coordinator chỉ làm nhiệm vụ điều phối.
+
+Coordinator phải:
+
+* đọc project state,
+* xác định active run,
+* xác định current phase,
+* xác định next required role,
+* nếu user request dài, nhiều ý, mơ hồ, mâu thuẫn, hoặc có khả năng cần tách task, phải xác nhận các ý chính với user trước khi tạo Harness run,
+* không tạo run từ một long request chưa rõ scope,
+* sau khi user xác nhận, tạo request snapshot chứa full confirmed request,
+* tạo request brief trung lập, ngắn gọn, chỉ gồm goal, explicit requirements, explicit constraints, explicit non-goals, ambiguity còn lại, và path tới full request snapshot,
+* tạo dispatch file cho required role tiếp theo khi bắt đầu role mới hoặc chuyển phase,
+* spawn required subagent,
+* đọc final report ngắn gọn của subagent sau khi role hoàn tất,
+* không đọc full role artifacts chỉ để xác nhận completion nếu final report đã đủ hợp lệ,
+* cập nhật project state và run state sau khi role hoàn tất, chỉ dựa trên status, artifact paths, evidence summary, blockers, và next lifecycle transition do role báo cáo.
+
+Coordinator không được:
+
+* sửa application code,
+* tự làm việc của Planner,
+* tự làm việc của Contract Reviewer,
+* tự làm việc của Generator,
+* tự làm việc của Evaluator,
+* tự viết implementation contract thay Planner,
+* tự viết review verdict thay Contract Reviewer,
+* tự viết implementation output thay Generator,
+* tự viết evaluation result thay Evaluator,
+* tạo request brief chứa implementation plan, review verdict, evaluation result, hoặc suy luận chuyên môn thay cho Planner,
+* duplicate nội dung request dài vào dispatch file,
+* tự approve output do chính nó tạo,
+* sửa dispatch đang được subagent thực thi, trừ khi dispatch sai, thiếu, hoặc không hợp lệ và cần dừng với `BLOCKED`,
+* bỏ qua required subagent role.
+
+Nếu không thể spawn required subagent, Coordinator phải dừng và báo `BLOCKED`.
+
+## Quy tắc Subagent
+
+Role behavior chi tiết của subagent được định nghĩa tại:
 
 ```txt
-.codex/agents/harness-planner.toml
-.codex/agents/harness-contract-reviewer.toml
-.codex/agents/harness-generator.toml
-.codex/agents/harness-evaluator.toml
+.codex/agents/*.toml
 ```
 
-Coordinator is orchestration-only. Coordinator must not perform lifecycle role work, write role artifacts for subagents, edit source/tests/config for implementation, repair failures directly, evaluate implementation, create free-form prompts for core roles, or continue in degraded single-session fallback.
+Subagent phải đọc dispatch file của mình trước và xem dispatch là source of truth cho role hiện tại.
 
-If required Codex project-scoped agents cannot be spawned, block the run before lifecycle role execution.
+Subagent chỉ được đọc các file được liệt kê trong dispatch và chỉ được ghi các file nằm trong allowed write scope.
 
-## Dispatch Semantics
+Subagent không được full lifecycle discovery mặc định, không scan unrelated Harness runs, obsolete artifacts, project history, hoặc unrelated source files.
 
-Use:
+Nếu dispatch, required inputs, allowed read scope, allowed write scope, project state, hoặc run state bị thiếu, mâu thuẫn, hoặc không hợp lệ, subagent phải dừng và báo `BLOCKED`.
 
-```bash
-bash .harness/scripts/dispatch-role.sh .harness/runs/<RUN_ID> <role>
-```
+## Lifecycle Roles
 
-`dispatch-role.sh` creates metadata only:
+Minimal Harness lifecycle:
 
 ```txt
-.harness/runs/<RUN_ID>/dispatch/<role>.dispatch.md
+Planner -> Contract Reviewer -> Generator -> Evaluator
 ```
 
-It does not spawn, execute, or emulate a subagent. Codex-native invocation of the named agent is the canonical execution path.
+Ranh giới role:
 
-Before Planner dispatch, runtime capability may be manually asserted:
+* Planner tạo hoặc cập nhật implementation contract.
+* Contract Reviewer approve, reject, hoặc block contract.
+* Generator chỉ implement approved contract.
+* Evaluator verify generated result dựa trên approved contract.
 
-```bash
-bash .harness/scripts/set-runtime-capability.sh .harness/runs/<RUN_ID> true
-```
+Không role nào được approve chính output của mình.
 
-If subagent runtime is unavailable:
+Không role nào được âm thầm bỏ qua next lifecycle role.
 
-```bash
-bash .harness/scripts/set-runtime-capability.sh .harness/runs/<RUN_ID> false "Subagent runtime unavailable"
-```
+## Dispatch Contract
 
-Required blocked message:
+Mỗi role phải được dispatch thông qua dispatch file.
 
-```text
-Subagent runtime unavailable.
-Harness lifecycle requires Codex project-scoped subagents from `.codex/agents/`.
-This run is blocked.
-No lifecycle role may be executed in this session.
-```
-
-## Coordinator Write Scope
-
-For coordinator/orchestrator sessions, run:
-
-```bash
-HARNESS_EXECUTOR_ROLE=coordinator \
-HARNESS_RUN_DIR=".harness/runs/<RUN_ID>" \
-bash .harness/scripts/validate-coordinator-write-scope.sh
-```
-
-Coordinator may write only narrow orchestration metadata allowed by the validator. `06-final-summary.md` must aggregate from `05-evaluator-report.md`, `04-implementation-report.md`, and `run.yaml`; it is not an independent role artifact.
-
-## Role Boundaries
-
-Planner writes `01-planner-brief.md` and `02-implementation-contract.md` in one planning invocation. Planner must not implement code, approve its own contract, or evaluate final output.
-
-Contract Reviewer writes `03-contract-review.md`. Final line must be exactly `- Status: approved` or `- Status: rejected_requires_revision`.
-
-Generator implements only after contract approval and writes `04-implementation-report.md`. Generator must stay within the approved contract and must not evaluate its own work.
-
-Evaluator independently evaluates implementation and writes `05-evaluator-report.md`. Final line must be exactly `- Status: pass`, `- Status: fail`, or `- Status: blocked_insufficient_evidence`.
-
-## Rework Routing
-
-If Evaluator returns a non-passing result, Coordinator must not fix implementation directly. Create a bounded Generator rework packet from `.harness/templates/generator-rework-packet.template.md`, invoke `harness_generator`, then invoke `harness_evaluator` again.
-
-If Generator cannot be spawned for required implementation or rework, stop with:
-
-```text
-BLOCKED_REQUIRED_GENERATOR_UNAVAILABLE
-```
-
-## Verification
-
-Run verification through the appropriate role. Default guidance lives in `.harness/guides/TESTING_POLICY.md`.
-
-Common commands, when relevant:
-
-```bash
-bash .harness/scripts/verify.sh
-bash .harness/scripts/smoke.sh
-```
-
-## Legacy Artifacts Are Forbidden
-
-Do not create or rely on:
+Dispatch files nằm tại:
 
 ```txt
-HANDOFF.md
-03-evaluator-contract-review.md
-04-generator-worklog.md
-06-fix-report.md
-07-final-summary.md
+.harness/runs/{RUN_ID}/dispatch/
 ```
 
-Current canonical artifacts are `00` through `06-final-summary.md`.
+Một dispatch file phải định nghĩa:
 
-## Priority
+* run id,
+* role,
+* current phase,
+* required input artifacts,
+* allowed read paths,
+* allowed write paths,
+* completion criteria,
+* blocked conditions.
 
-When instructions conflict, follow this order:
+Dispatch phải liệt kê project state và run state trong allowed read paths nếu role cần validation state.
 
-1. Current user request.
-2. Root `AGENTS.md`.
-3. Relevant `.harness/project/*`.
-4. Relevant `.harness/codebase/*`.
-5. `run.yaml` and current run artifacts.
-6. Relevant `.codex/skills/harness-*/SKILL.md`.
-7. Relevant `.harness/guides/*`.
-8. Relevant `.harness/workflows/*`.
-9. Relevant `.codex/agents/*.toml`.
-10. Templates/scripts in `.harness/`.
-11. Agent defaults or assumptions.
+Với long request, dispatch chỉ trỏ tới request brief và request snapshot; không duplicate full request content.
+
+Nếu một edit target không nằm trong `allowed_write_paths`, không sửa file đó dù workspace sandbox cho phép.
+
+Subagent phải xem dispatch file là source of truth cho task hiện tại.
+
+Nếu dispatch mâu thuẫn với project state hoặc run state, subagent phải dừng và báo `BLOCKED`.
+
+## Write Scope Rules
+
+Chỉ Coordinator được sửa project state, run state, và dispatch files.
+
+Chỉ Planner được sửa planner brief, implementation contract, và decision artifacts khi dispatch cho phép durable decision creation hoặc revision.
+
+Chỉ Contract Reviewer được sửa review artifacts. Contract Reviewer có thể approve, reject, hoặc yêu cầu sửa decision artifacts thông qua review artifacts.
+
+Chỉ Generator được sửa application code changes trong allowed write scope.
+
+Chỉ Evaluator được sửa evaluation artifacts và test-matrix artifacts.
+
+Planner có thể định nghĩa acceptance criteria và verification expectations trong implementation contract, nhưng không sửa test-matrix files trừ khi dispatch cho phép rõ ràng.
+
+Generator không được sửa decisions hoặc test-matrix artifacts.
+
+Evaluator không được sửa decisions, trừ khi dispatch cho phép rõ ràng để ghi evidence-backed invalidation proposal.
+
+Không ghi ngoài allowed write scope.
+
+Không opportunistically sửa unrelated files.
+
+## Token Discipline
+
+Đọc tập file nhỏ nhất đủ để hoàn thành nhiệm vụ.
+
+Ưu tiên path/pointer thay vì copy nội dung dài.
+
+Ưu tiên dispatch paths thay vì scan directory.
+
+Không copy toàn bộ artifact content vào response trừ khi bắt buộc.
+
+Không giải thích toàn bộ lifecycle trừ khi được yêu cầu.
+
+Chỉ report status ngắn gọn.
+
+## Output Discipline
+
+Khi kết thúc một role task, chỉ report:
+
+* status: `PASS`, `FAIL`, `BLOCKED`, hoặc `DONE`,
+* decision: role-specific value như `planned`, `approved`, `rejected_requires_revision`, `implemented`, `pass`, `fail`, hoặc blocker cụ thể,
+* role,
+* files read,
+* files changed,
+* evidence checked,
+* next recommended role,
+* blockers, nếu có.
+
+Tránh summary dài, lặp lại context, và giải thích suy đoán.
+
+Coordinator nên dùng final report của subagent để advance state. Coordinator không đọc full role artifacts trừ khi final report bị thiếu, không hợp lệ, blocked, failed, hoặc mâu thuẫn với lifecycle/state/dispatch.
+
+## Role Result Contract
+
+| role | status | decision |
+|---|---|---|
+| harness_planner | DONE, BLOCKED | planned, blocked |
+| harness_contract_reviewer | PASS, FAIL, BLOCKED | approved, rejected_requires_revision, blocked |
+| harness_generator | DONE, BLOCKED | implemented, blocked |
+| harness_evaluator | PASS, FAIL, BLOCKED | pass, fail, blocked_insufficient_evidence |
+
+## Conflict Rule
+
+Khi instruction mâu thuẫn, dùng thứ tự ưu tiên sau:
+
+```txt
+safety and runtime constraints
+> User request
+> dispatch file
+> project state
+> run state
+> this AGENTS.md
+> role-specific defaults
+```
+
+Nếu conflict ảnh hưởng tới permission, lifecycle order, hoặc write scope, dừng và báo `BLOCKED`.
